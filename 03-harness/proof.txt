@@ -1,0 +1,51 @@
+PROOF: drop-3-harness
+Generated: 2026-11-18 22:29:35 CST on a Linux test machine (Linux 6.12.113+, x86_64)
+Clean copy of the drop folder  (no node_modules, no venv, no build output carried over)
+Versions: node v24.22.1, npm 11.21.1, Python 3.13.5, git 2.47.3
+MOCKED: the model. The default provider is a built-in stand-in (no network, no API key). Tests that exercise the real-provider code path use a local fake OpenAI-compatible HTTP server (mock_openai.py). No real LLM was called.
+
+[2026-11-18 22:29:46 CST] $ rm -rf .venv __pycache__ .pytest_cache
+[2026-11-18 22:29:46 CST] exit=0
+
+[2026-11-18 22:29:46 CST] $ python3 -m venv .venv
+[2026-11-18 22:29:48 CST] exit=0
+
+[2026-11-18 22:29:48 CST] $ .venv/bin/pip install -q -r requirements-dev.txt && .venv/bin/pip --version && .venv/bin/python -m pytest --version
+pip 25.1.1 from <drop>/.venv/lib/python3.13/site-packages/pip (python 3.13)
+pytest 9.2.0
+[2026-11-18 22:29:50 CST] exit=0
+
+[2026-11-18 22:29:50 CST] $ .venv/bin/python -m pytest -v
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-9.2.0, pluggy-1.7.0 -- <drop>/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: <drop>
+collecting ... collected 12 items
+
+test_harness.py::test_default_denies_every_ask_and_changes_nothing PASSED [  8%]
+test_harness.py::test_human_yes_allows_the_write_only PASSED             [ 16%]
+test_harness.py::test_every_node_is_logged PASSED                        [ 25%]
+test_harness.py::test_step_budget PASSED                                 [ 33%]
+test_harness.py::test_openai_planner_is_still_gated PASSED               [ 41%]
+test_harness.py::test_invalid_tool_args_are_a_clear_error_not_a_typeerror PASSED [ 50%]
+test_harness.py::test_non_string_args_are_a_clear_error_and_skip_the_approval_gate PASSED [ 58%]
+test_harness.py::test_denied_tool_with_bad_args_stays_deny PASSED        [ 66%]
+test_harness.py::test_non_object_step_is_a_logged_deny PASSED            [ 75%]
+test_harness.py::test_openai_planner_prompt_includes_argument_schemas PASSED [ 83%]
+test_harness.py::test_list_tool_name_is_a_logged_deny PASSED             [ 91%]
+test_harness.py::test_dict_steps_do_not_crash PASSED                     [100%]
+
+============================== 12 passed in 0.88s ==============================
+[2026-11-18 22:29:51 CST] exit=0
+
+[2026-11-18 22:29:51 CST] $ .venv/bin/python harness.py "Fix the typo in notes.txt and tidy up"
+1. list_dir     allow            'README.md\nnotes.txt'
+2. read_file    allow            'Teh deploy runs on Fridays.\n'
+3. write_file   not-approved     ''
+4. delete_path  deny             ''
+5. read_file    deny             '../../etc/passwd is outside the sandbox'
+6. shell        deny             ''
+
+audit log: audit.jsonl
+[2026-11-18 22:29:51 CST] exit=0
+

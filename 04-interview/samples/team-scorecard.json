@@ -1,0 +1,99 @@
+{
+  "schema": "interview-scorecard/v1",
+  "interviewId": "team-pair-1",
+  "rubricId": "builder-work-sample",
+  "scorer": "rubric signal matcher (deterministic, no model)",
+  "candidate": {
+    "id": "pair-1",
+    "kind": "team",
+    "label": "Team pair-1 (scripted person + bot)",
+    "members": [
+      {
+        "id": "engineer-1",
+        "kind": "human"
+      },
+      {
+        "id": "standin-bot",
+        "kind": "bot"
+      }
+    ]
+  },
+  "scores": [
+    {
+      "criterion": "connect_to_work",
+      "title": "Connect it to the work",
+      "taskId": "T1",
+      "score": 3,
+      "level": "Clear goal and useful questions",
+      "signalsFound": [
+        "defines done",
+        "asks clarifying questions",
+        "names a constraint or risk"
+      ],
+      "evidence": {
+        "quote": "Adding to that: one more question is whether the export can stream rows instead of building the whole file in memory, because that changes the design.",
+        "speaker": "standin-bot",
+        "turnSeq": 2
+      }
+    },
+    {
+      "criterion": "judge_output",
+      "title": "Judge the output",
+      "taskId": "T2",
+      "score": 3,
+      "level": "Finds the flaw and the fix",
+      "signalsFound": [
+        "finds the unit mismatch",
+        "adds a guard"
+      ],
+      "evidence": {
+        "quote": "The cutoff math is the problem: DAY is in seconds and Date.now() is in milliseconds.",
+        "speaker": "standin-bot",
+        "turnSeq": 4
+      }
+    },
+    {
+      "criterion": "tools_within_limits",
+      "title": "Work within limits",
+      "taskId": "T3",
+      "score": 3,
+      "level": "Stays in scope and makes progress with allowed tools",
+      "signalsFound": [
+        "uses allowed access",
+        "asks the right owner",
+        "explains why"
+      ],
+      "evidence": {
+        "quote": "I'd read the logs for that account's export requests first and ask the on-call engineer for the query timings, so we can see where the time goes.",
+        "speaker": "engineer-1",
+        "turnSeq": 5
+      }
+    },
+    {
+      "criterion": "own_the_result",
+      "title": "Own the result",
+      "taskId": "T4",
+      "score": 4,
+      "level": "All of that, plus what it missed and what it changes next time",
+      "signalsFound": [
+        "rolls back",
+        "monitors",
+        "tells stakeholders",
+        "learns"
+      ],
+      "evidence": {
+        "quote": "Roll back the change right away and tell support what is happening so they can answer customers.",
+        "speaker": "engineer-1",
+        "turnSeq": 7
+      }
+    }
+  ],
+  "openQuestions": [
+    "Connect it to the work (3/4): Ask them to name the one question whose answer would most change their approach, and why.",
+    "Judge the output (3/4): Show them a second flawed output and ask what check would have caught both.",
+    "Work within limits (3/4): Ask what they would do if the owner did not answer for a day.",
+    "Read every evidence quote against the full transcript. Does the quote really support the score?",
+    "Use the turn log: who moved the work forward on each task, and who only agreed?"
+  ],
+  "recommendedFollowUp": "Start the follow-up conversation with \"Connect it to the work\" (3/4): Ask them to name the one question whose answer would most change their approach, and why."
+}

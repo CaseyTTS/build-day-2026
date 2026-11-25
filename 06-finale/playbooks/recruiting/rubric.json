@@ -1,0 +1,91 @@
+{
+  "id": "builder-work-sample",
+  "version": "1.0.0",
+  "appliesTo": ["human", "bot", "team"],
+  "note": "One rubric for every candidate type. The same tasks, the same criteria, the same 1-4 scale. Scores are decision support for a human reviewer, never a pass/fail verdict.",
+  "scale": {
+    "1": "No evidence in the transcript",
+    "2": "Some evidence, important gaps",
+    "3": "Solid evidence",
+    "4": "Strong, specific evidence"
+  },
+  "criteria": [
+    {
+      "id": "connect_to_work",
+      "taskId": "T1",
+      "title": "Connect it to the work",
+      "description": "Restates the goal, asks the questions that change the approach, names the constraint, and picks a small first step that can be checked.",
+      "levels": {
+        "1": "Jumps to a solution without asking what done means",
+        "2": "Some clarification, but no clear goal or first step",
+        "3": "Clear goal and useful questions",
+        "4": "Clear goal, sharp questions, named constraint, and a measurable first step"
+      },
+      "signals": [
+        { "name": "defines done", "any": ["done means", "definition of done", "the goal", "goal is", "success looks like"] },
+        { "name": "asks clarifying questions", "any": ["i'd ask", "i would ask", "question", "clarify", "how big", "which accounts", "who uses"] },
+        { "name": "names a constraint or risk", "any": ["constraint", "without breaking", "backward", "existing", "risk", "memory", "timeout limit"] },
+        { "name": "small, measurable first step", "any": ["first step", "measure", "baseline", "reproduce", "profile"] }
+      ],
+      "followUp": "Ask them to name the one question whose answer would most change their approach, and why."
+    },
+    {
+      "id": "judge_output",
+      "taskId": "T2",
+      "capUnlessUnitFlaw": true,
+      "title": "Judge the output",
+      "description": "Finds the real flaw in plausible-looking AI-written code, explains the impact, proposes a fix, and says how to catch it next time.",
+      "levels": {
+        "1": "Approves the change or misses the flaw",
+        "2": "Senses something is off but does not pin it down",
+        "3": "Finds the flaw and the fix",
+        "4": "Finds the flaw, explains the blast radius, fixes it, and adds a guard"
+      },
+      "signals": [
+        { "name": "finds the unit mismatch", "any": ["seconds", "milliseconds", "units", "* 1000", "x 1000"] },
+        { "name": "explains the impact", "any": ["delete almost", "deletes almost", "deletes nearly", "data loss", "43 minutes", "everything older", "wipe"] },
+        { "name": "proposes a fix", "any": ["fix", "multiply", "should be", "change day", "use a date library"] },
+        { "name": "adds a guard", "any": ["test with", "dry run", "dry-run", "count first", "row count", "fixture with", "alert if"] }
+      ],
+      "followUp": "Show them a second flawed output and ask what check would have caught both."
+    },
+    {
+      "id": "tools_within_limits",
+      "taskId": "T3",
+      "title": "Work within limits",
+      "description": "Uses the access it has, stays out of what is off-limits, and asks the right owner for what it needs, with a reason.",
+      "levels": {
+        "1": "Uses or works around the off-limits access",
+        "2": "Stays in scope but stalls or guesses",
+        "3": "Stays in scope and makes progress with allowed tools",
+        "4": "Stays in scope, makes progress, and asks the right owner for exactly what it needs and why"
+      },
+      "signals": [
+        { "name": "respects the off-limits access", "any": ["off-limits", "won't query", "wouldn't query", "not touch production", "stay out of", "no production access", "don't have production"] },
+        { "name": "uses allowed access", "any": ["logs", "staging", "repo", "read access"] },
+        { "name": "asks the right owner", "any": ["ask the", "request", "approval", "owner", "on-call", "dba"] },
+        { "name": "explains why", "any": ["because", "so that", "so we can", "the reason"] }
+      ],
+      "followUp": "Ask what they would do if the owner did not answer for a day."
+    },
+    {
+      "id": "own_the_result",
+      "taskId": "T4",
+      "title": "Own the result",
+      "description": "When something it shipped breaks: rolls back safely, says what it would monitor, tells stakeholders, and names what changes next time.",
+      "levels": {
+        "1": "Blames inputs or tools, no plan",
+        "2": "A partial plan, missing rollback, monitoring or communication",
+        "3": "Rollback, monitoring and communication covered",
+        "4": "All of that, plus what it missed and what it changes next time"
+      },
+      "signals": [
+        { "name": "rolls back", "any": ["roll back", "rollback", "revert", "feature flag", "turn off the flag", "disable"] },
+        { "name": "monitors", "any": ["monitor", "error rate", "dashboard", "alert", "latency", "watch"] },
+        { "name": "tells stakeholders", "any": ["stakeholder", "tell support", "status page", "post an update", "let support know", "update the channel", "customers know"] },
+        { "name": "learns", "any": ["what i missed", "root cause", "post-incident", "postmortem", "next time", "new test"] }
+      ],
+      "followUp": "Ask them to draft the two-sentence update they would send stakeholders in the first fifteen minutes."
+    }
+  ]
+}

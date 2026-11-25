@@ -1,0 +1,42 @@
+Real-model proof
+Written: 2026-11-18 21:22:49 CST (America/Chicago)
+node -v: v24.22.1
+Python: 3.13.5
+Ollama version: 0.40.16 (official Linux install, listening on 127.0.0.1:11434)
+Hardware: 8x CPU, 15.6 GiB RAM, no GPU (Ollama reported library=cpu, available ~11 GiB at serve start)
+Free/local only: no paid APIs, no keys, no spending.
+
+Models (official Ollama library weights, sha256-verified):
+- qwen2.5:1.5b
+  list ID: 65ec06548149
+  digest: 65ec06548149b04c096a120e4a6da9d4017ea809c91734ea5631e89f96ddc57b
+  size: 986061892 bytes (986 MB)
+  details: qwen2, 1.5B, Q4_K_M, context 32768, capabilities: completion, tools
+  model-layer blob: sha256:183715c435899236895da3869489cc30ac241476b4971a20285b1a462818a5b4 (986048512 bytes)
+- nomic-embed-text:latest
+  list ID: 0a109f422b47
+  digest: 0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f
+  size: 274302450 bytes (274 MB)
+  details: nomic-bert, 137M, F16, embedding length 768, capabilities: embedding
+  model-layer blob: sha256:970aa74c0a90ef7482477cf803618e776e173c007bf957f635f1015bfcfef0e6 (274290656 bytes)
+
+How the models were obtained: `ollama pull` could not be used on the test machine's network, so the official manifests and blobs were downloaded from the Ollama registry, sha256-checked against the manifest, and imported. No paid or third-party converted weights were used.
+
+All drop commands were run from a clean copy of the drop folder.
+
+==========
+DROP 5 — home lab vs virtual dev (drop-5-homelab)
+==========
+No model call. This drop was not run against Ollama.
+
+Confirmation (from the copy at <drop>, which matches the live tree at copy time):
+- .env.example: "This starter calls no model or API. No variables are required."
+- STACK.md: "Model / API: None. This drop calls no model or API, so it needs no keys or env vars."
+- README.md: "No model or API key is involved."
+- A search of src/, test/, and package.json found no openai / ollama / model / fetch / HTTP client usage. The TypeScript starter prints where it is running (plain Node, Docker Compose, or a devcontainer) and runs lint + tests.
+
+Exact command: none for a real model. Env switches such as MODEL_PROVIDER / AI_BASE_URL / AI_MODEL do not exist here.
+
+Quality assessment: not applicable (no model output to judge). The Ollama install and the qwen2.5:1.5b / nomic-embed-text models above were not used by this drop.
+
+Recommended code fixes: none related to a real-model path, because there isn't one. If a later revision adds a sample that calls a model, it should follow the same env pattern as drops 1-4 and keep a no-key default.

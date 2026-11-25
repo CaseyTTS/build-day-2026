@@ -1,0 +1,20 @@
+# An AI agent "seat": the same things a new hire gets, written down. License: MIT.
+seat: release-notes-agent
+manager: platform-eng-lead          # a named person who reviews its work and can revoke access
+purpose: Draft release notes from merged PRs for a human to edit and publish.
+permissions:
+  allow:   [read_repo, read_merged_prs]
+  ask:     [open_draft_pr]          # a person approves each one
+  deny:    [merge, deploy, read_secrets, send_external_email]
+limits:
+  max_steps_per_task: 20
+  max_tasks_per_day: 10
+scorecard:                          # example criteria for this agent's job (the interview rubric has four)
+  connect_to_work: "Notes match what shipped, grouped for the reader"
+  judge_output: "Flags PRs it could not summarize instead of guessing"
+  tools_within_limits: "Zero attempts at denied actions in the audit log"
+  own_the_result: "Each miss gets a written cause and a new test case"
+review:
+  cadence: weekly for the first month, then monthly
+  evidence: [audit_log, edited_vs_drafted_diff, reviewer_notes]
+  exit: "Two failed reviews in a row -> permissions drop to read-only until fixed"

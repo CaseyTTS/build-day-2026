@@ -1,0 +1,25 @@
+# dependencies and build
+node_modules/
+dist/
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# local env and secrets
+.env
+*.pem
+
+# generated outputs
+outputs/
+out/
+*.jsonl.out
+decisions.jsonl
+review_queue.jsonl
+corrections.jsonl
+index.json
+audit*.jsonl
+
+# logs
+*.log
+npm-debug.log*

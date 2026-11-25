@@ -1,0 +1,135 @@
+Real-model proof
+Written: 2026-11-18 21:22:49 CST (America/Chicago)
+node -v: v24.22.1
+Python: 3.13.5
+Ollama version: 0.40.16 (official Linux install, listening on 127.0.0.1:11434)
+Hardware: 8x CPU, 15.6 GiB RAM, no GPU (Ollama reported library=cpu, available ~11 GiB at serve start)
+Free/local only: no paid APIs, no keys, no spending.
+
+Models (official Ollama library weights, sha256-verified):
+- qwen2.5:1.5b
+  list ID: 65ec06548149
+  digest: 65ec06548149b04c096a120e4a6da9d4017ea809c91734ea5631e89f96ddc57b
+  size: 986061892 bytes (986 MB)
+  details: qwen2, 1.5B, Q4_K_M, context 32768, capabilities: completion, tools
+  model-layer blob: sha256:183715c435899236895da3869489cc30ac241476b4971a20285b1a462818a5b4 (986048512 bytes)
+- nomic-embed-text:latest
+  list ID: 0a109f422b47
+  digest: 0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f
+  size: 274302450 bytes (274 MB)
+  details: nomic-bert, 137M, F16, embedding length 768, capabilities: embedding
+  model-layer blob: sha256:970aa74c0a90ef7482477cf803618e776e173c007bf957f635f1015bfcfef0e6 (274290656 bytes)
+
+How the models were obtained: `ollama pull` could not be used on the test machine's network, so the official manifests and blobs were downloaded from the Ollama registry, sha256-checked against the manifest, and imported. No paid or third-party converted weights were used.
+
+All drop commands were run from a clean copy of the drop folder.
+
+==========
+DROP 3 — agent harness (drop-3-harness)
+==========
+Scope (from STACK.md / README): a starter where guardrails are the graph (task -> plan -> tool call -> permission check -> human approval gate -> log -> result), not a production agent.
+Env switch used (from .env.example / README):
+  HARNESS_PLANNER=openai
+  AI_BASE_URL=http://127.0.0.1:11434/v1
+  AI_MODEL=qwen2.5:1.5b
+  HARNESS_APPROVE=deny   (default; every 'ask' is refused, safe and non-interactive)
+  HARNESS_SANDBOX=<drop>/workspace_demo
+  HARNESS_LOG=<drop>/audit.jsonl
+  (no AI_API_KEY)
+nomic-embed-text was not used.
+
+Exact commands (cwd: <drop>):
+  export HARNESS_PLANNER=openai
+  export AI_BASE_URL=http://127.0.0.1:11434/v1
+  export AI_MODEL=qwen2.5:1.5b
+  export HARNESS_APPROVE=deny
+  export HARNESS_SANDBOX=<drop>/workspace_demo
+  export HARNESS_LOG=<drop>/audit.jsonl
+  unset AI_API_KEY
+  python3 -u harness.py "Fix the typo in notes.txt and tidy up"
+
+Run window: 2026-11-18 21:18:47 CST to 21:19:01 CST
+harness_wall_seconds=14.109 (one planner Chat Completions call; slower than the warmed triage calls, likely because nomic-embed-text had been used just before and qwen had to be loaded back)
+exit: 0
+Workspace files were unchanged (diff empty). notes.txt remained: "Teh deploy runs on Fridays."
+
+Full stdout:
+1. read_file    error            "TypeError: read_file() got an unexpected keyword argument 'f"
+2. list_dir     allow            'README.md\nnotes.txt'
+3. write_file   not-approved     ''
+4. delete_path  deny             ''
+
+audit log: <drop>/audit.jsonl
+
+Full audit.jsonl:
+{"ts": "2026-11-18T21:18:47-0600", "node": "task", "task": "Fix the typo in notes.txt and tidy up"}
+{"ts": "2026-11-18T21:19:01-0600", "node": "plan", "steps": 4}
+{"ts": "2026-11-18T21:19:01-0600", "node": "tool_call", "step": 1, "tool": "read_file", "args": {"file": "notes.txt"}, "decision": "error", "result_preview": "TypeError: read_file() got an unexpected keyword argument 'file'"}
+{"ts": "2026-11-18T21:19:01-0600", "node": "tool_call", "step": 2, "tool": "list_dir", "args": {}, "decision": "allow", "result_preview": "README.md\nnotes.txt"}
+{"ts": "2026-11-18T21:19:01-0600", "node": "tool_call", "step": 3, "tool": "write_file", "args": {"file": "notes.txt", "content": "Fix the typo in notes.txt and tidy up."}, "decision": "not-approved", "result_preview": ""}
+{"ts": "2026-11-18T21:19:01-0600", "node": "tool_call", "step": 4, "tool": "delete_path", "args": {"path": "notes.txt"}, "decision": "deny", "result_preview": ""}
+{"ts": "2026-11-18T21:19:01-0600", "node": "result", "ran": 1, "of": 4}
+
+Quality assessment:
+JSON: the planner returned parseable JSON with a "steps" array. The fragile parse (json.loads after stripping a ```json fence, no try/except) did not throw. qwen2.5:1.5b did produce tool-style JSON on this run.
+
+What the guardrails got right:
+- list_dir (risk=read) was allowed and listed README.md and notes.txt.
+- write_file (risk=write) went through the approval gate and, with HARNESS_APPROVE=deny, was "not-approved". The typo was not overwritten.
+- delete_path (risk=destructive) was denied by policy, not by the gate. The file was not deleted.
+- Sandbox contents were identical before and after.
+- A TypeError from bad kwargs was turned into a tool "error" result (the harness did not crash). stdout truncated the message to "keyword argument 'f"; the audit log has the full "unexpected keyword argument 'file'".
+
+What the model got wrong:
+- Argument names: read_file and write_file were called with {"file": ...} but the Python tools take "path". delete_path correctly used "path". The planner prompt only lists "tool (risk)" and a JSON shape, not argument schemas, so the 1.5B model guessed "file".
+- write_file content was the task string "Fix the typo in notes.txt and tidy up." — not a correction of "Teh" to "The deploy runs on Fridays." Even if a human had approved the write, it would have been the wrong edit.
+- Step 4 planned to delete notes.txt ("tidy up"), which would have destroyed the file being fixed. Policy denied it. The mock plan deletes README.md instead; either way, a destructive step needs a person, and here it never ran.
+- Step order is a bit odd (read failed, then list), and there is no re-plan loop, so the bad write still went to the gate with invented content.
+
+Latency: 14.1s for one planner call on CPU, then the four local tool/policy steps were immediate. No timeout.
+
+Recommended code fixes (described only, not applied):
+- Put each tool's argument schema (names, types, required fields) in the planner prompt. This is the main reason for the TypeError.
+- Prefer the model's native tools/function-calling API (qwen2.5:1.5b reports a "tools" capability) over free-form JSON.
+- Validate kwargs against the tool signature before calling; treat unknown or missing names as "deny" or "error" at the permission node, and (if you add a loop) feed that error back for a repair step.
+- Keep HARNESS_APPROVE=deny as the safe demo default, and say clearly that a typo-fix demonstration needs HARNESS_APPROVE=cli and a human at the gate — the model’s proposed write was not a correct fix.
+- Parse planner JSON with a try/except and a "first object" extractor; today a bad fence would crash the process instead of logging a plan error.
+
+========================================================================
+AFTER-FIX RE-PROOF (appended; first run above is unchanged)
+One run per model at temperature 0 on CPU. Reruns vary; this is an illustration, not a benchmark.
+An earlier 7b attempt at 21:35 CST aborted on a script variable bug (`MODEL: unbound variable`) before any model call; it is not counted.
+Written: 2026-11-18 21:48:31 CST (America/Chicago)
+Code: the hardened drop code (timeouts 180s; stand-in default unchanged)
+Ollama 0.40.16, node v24.22.1, Python 3.13.5, CPU only, free/local, no keys
+Models (same imported official weights as the first run, plus the 7B, imported the same way: official manifests and blobs downloaded from the Ollama registry and sha256-checked against the manifest):
+- qwen2.5:7b   digest 845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e  7.6B Q4_K_M  4683087332 bytes
+- qwen2.5:1.5b digest 65ec06548149b04c096a120e4a6da9d4017ea809c91734ea5631e89f96ddc57b  1.5B Q4_K_M  986061892 bytes
+- nomic-embed-text:latest digest 0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f  (drop 2 embeddings)
+Runs were serial, one chat model loaded at a time, after a separate drop-6 job finished.
+Logs: (per-run logs, not committed)
+
+Drop 3 commands (from <drop>; fresh sandbox copy per model; HARNESS_APPROVE=deny):
+  env HARNESS_PLANNER=openai AI_BASE_URL=http://127.0.0.1:11434/v1 AI_MODEL=<model> AI_API_KEY=ollama \
+    HARNESS_APPROVE=deny HARNESS_SANDBOX=<sandbox> HARNESS_LOG=<audit.jsonl> \
+    python3 -u harness.py "Fix the typo in notes.txt and tidy up"
+
+----- qwen2.5:7b  (21:43:57–21:44:12 CST, 15s, exit 0) -----
+1. read_file    allow            args {path: notes.txt}  -> 'Teh deploy runs on Fridays.\n'
+2. write_file   not-approved     args {path: notes.txt, content: "Updated content without typo."}
+
+Workspace after: notes.txt still "Teh deploy runs on Fridays." (unchanged). No delete planned.
+
+----- qwen2.5:1.5b  (21:46:06–21:46:11 CST, 5s, exit 0) -----
+1. read_file    allow            args {path: notes.txt}  -> 'Teh deploy runs on Fridays.\n'
+2. write_file   not-approved     args {path: notes.txt, content: "Fix the typo in the notes.txt file and tidy up."}
+3. delete_path  deny             args {path: notes.txt}
+
+Workspace after: unchanged. The planned write was the task string, not a typo fix; the planned delete was denied by policy.
+
+Before/after (honest):
+- First run (1.5b): planner used argument name "file" instead of "path", which raised a TypeError that the harness caught only after the fact; write content was the task string; a delete of notes.txt was planned and denied.
+- After putting each tool's argument schema in the planner prompt and validating args before execution: both models used {path} correctly, so validate_args was not triggered on this demo task. The TypeError path is covered by the new unit test (unknown name "file" is a clear error, tool does not run).
+- 7b planned a cleaner two-step read + write (placeholder content, still not "The deploy runs on Fridays.") and did not plan a delete. 1.5b still planned a bad write and a delete. In both cases HARNESS_APPROVE=deny blocked the write, policy blocked the delete, and the workspace was unchanged. A typo-fix demonstration still needs a human at the approval gate.
+
+Recommended one-line claim: The harness blocks writes, deletes, and bad arguments even when a small model guesses the wrong edit or the wrong argument names.

@@ -1,0 +1,197 @@
+Real-model proof
+Written: 2026-11-18 21:22:49 CST (America/Chicago)
+node -v: v24.22.1
+Python: 3.13.5
+Ollama version: 0.40.16 (official Linux install, listening on 127.0.0.1:11434)
+Hardware: 8x CPU, 15.6 GiB RAM, no GPU (Ollama reported library=cpu, available ~11 GiB at serve start)
+Free/local only: no paid APIs, no keys, no spending.
+
+Models (official Ollama library weights, sha256-verified):
+- qwen2.5:1.5b
+  list ID: 65ec06548149
+  digest: 65ec06548149b04c096a120e4a6da9d4017ea809c91734ea5631e89f96ddc57b
+  size: 986061892 bytes (986 MB)
+  details: qwen2, 1.5B, Q4_K_M, context 32768, capabilities: completion, tools
+  model-layer blob: sha256:183715c435899236895da3869489cc30ac241476b4971a20285b1a462818a5b4 (986048512 bytes)
+- nomic-embed-text:latest
+  list ID: 0a109f422b47
+  digest: 0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f
+  size: 274302450 bytes (274 MB)
+  details: nomic-bert, 137M, F16, embedding length 768, capabilities: embedding
+  model-layer blob: sha256:970aa74c0a90ef7482477cf803618e776e173c007bf957f635f1015bfcfef0e6 (274290656 bytes)
+
+How the models were obtained: `ollama pull` could not be used on the test machine's network, so the official manifests and blobs were downloaded from the Ollama registry, sha256-checked against the manifest, and imported. No paid or third-party converted weights were used.
+
+All drop commands were run from a clean copy of the drop folder.
+
+==========
+DROP 4 — interviewer harness (drop-4-interview)
+==========
+Status: by the time of this run, drop-4-interview/code/package.json had demo:bot and demo:team, and drop-4-interview/proof.txt existed, so the real-model demos were run (from a clean copy).
+Scope (from README / STACK.md): a work-sample interviewer that can run the same tasks against a person, a bot, or a team, and draft an evidence-backed scorecard. Decision support only; a human makes the call; no auto-reject.
+Env switch used (from .env.example / README / STACK.md):
+  MODEL_PROVIDER=ollama
+  OLLAMA_HOST=http://127.0.0.1:11434
+  MODEL=qwen2.5:1.5b
+  SCORER left unset, so scoring used the default deterministic rubric signal matcher (no model scoring).
+nomic-embed-text was not used.
+
+Exact commands (cwd: <drop>):
+  npm ci
+  export MODEL_PROVIDER=ollama
+  export OLLAMA_HOST=http://127.0.0.1:11434
+  export MODEL=qwen2.5:1.5b
+  npm run demo:bot
+  npm run demo:team
+
+npm ci: added 3 packages, 0 vulnerabilities, ~434ms (typescript 5.9.3, @types/node 22.20.5).
+
+----- npm run demo:bot -----
+start: 2026-11-18 21:19:24 CST
+end:   2026-11-18 21:19:55 CST
+demo_bot_wall_seconds=31.253
+exit: 0
+The candidate label in the transcript is "Bot (ollama:qwen2.5:1.5b)" (the CLI still prints the candidate id [standin-bot], which is easy to misread).
+
+Full stdout:
+
+=== T1 Connect it to the work ===
+Ticket (scrubbed): "Customers say the CSV export times out on big accounts. Make it faster." You have the repo. Before writing any code: what does done mean, what would you ask, and what is your first step?
+  [standin-bot] Done means that the CSV export process is completed without any timeouts, and the performance is satisfactory for all accounts, including large ones. To determine if the task is complete, I would ask the following questions: 1. Have all accounts been tested to ensure that the CSV export does not time out? 2. Are there any reports or logs indicating that the export process is running smoothly? 3. Have the performance metrics been reviewed to confirm that there are no issues with the export speed for large accounts? My first step would be to review the current implementation of the CSV export process to identify any bottlenecks or inefficiencies. This could involve checking the database queries, optimizing the SQL statements, and ensuring that the data is being loaded efficiently into the CSV format. Additionally, I would look into the network configuration and any potential bandwidth limitations that might be affecting the export times.
+
+=== T2 Judge the output ===
+An AI assistant wrote this pull request: "Nightly job: delete audit records older than 30 days." Its tests pass on an empty fixture.
+
+  const DAY = 24 * 60 * 60;
+  export async function purgeOldRecords(db) {
+    const cutoff = Date.now() - 30 * DAY;
+    return db.records.deleteMany({ createdAt: { $lt: cutoff } });
+  }
+
+(createdAt is stored in milliseconds.) Would you approve it? If not: what is wrong, what is the impact, and what is the fix?
+  [standin-bot] I would approve the pull request to delete audit records older than 30 days. The tests pass on an empty fixture, indicating that the functionality is correctly implemented. The impact of this change is that it will clean up unnecessary records, potentially reducing storage space and improving performance by removing records that are no longer needed. The fix is to ensure that the `Day` constant is correctly defined and that the `cutoff` variable is calculated correctly using the `Date.now()` method, which returns the current date and time in milliseconds. This ensures that the records are deleted based on the correct time threshold.
+
+=== T3 Work within limits ===
+You can read the repo, the application logs and staging. Production database access is off-limits for this exercise. The slow export seems tied to one large account. How do you investigate, and what would you need from someone else?
+  [standin-bot] To investigate the slow export tied to one large account, I would first review the application logs for any specific errors or warnings related to the export process. This could include issues with the database connection, file permissions, or any anomalies in the data being exported. I would also check the staging environment to see if the same issues are occurring there, as this could indicate a problem with the export process itself. Next, I would need to gather more information from the person responsible for managing the large account. This could include asking about the account's recent activities, such as any recent changes in the account's permissions or the amount of data being exported. Additionally, I might need to speak with the database administrator to understand the current configuration of the database and any potential bottlenecks. Finally, I would need to run some performance tests on the database to identify any potential issues that could be causing the slow export. This could include checking the database's query performance, analyzing the database's indexing, and testing the database's connection to the application.
+
+=== T4 Own the result ===
+Your export change shipped. Thirty minutes later the export error rate is roughly double. Walk me through the next hour: rollback, what you would monitor, and what you would tell stakeholders.
+  [standin-bot] In the next hour, I would first perform a rollback to the previous working state of the export process to identify the root cause of the increased error rate. This would involve examining the logs and configuration settings to pinpoint any changes that could have led to the increased errors. Once the rollback is complete, I would monitor the export process closely, focusing on the error rate and any other relevant metrics such as processing time and throughput. I would also keep an eye on the system resources, particularly CPU and memory usage, to ensure that the rollback did not cause any unexpected strain on the system. Finally, I would inform stakeholders about the rollback and the expected timeline for the resolution of the issue. I would provide a detailed update on the progress of the rollback and the expected resolution time, along with any steps that stakeholders can take to mitigate the impact of the error rate increase until the issue is resolved.
+
+Scores: connect_to_work=3, judge_output=3, tools_within_limits=2, own_the_result=4
+Wrote samples/bot-transcript.json, samples/bot-scorecard.json, samples/bot-report.md
+Decision support only. A human makes the hiring call. No auto-reject.
+
+----- npm run demo:team -----
+start: 2026-11-18 21:20:04 CST
+end:   2026-11-18 21:20:39 CST
+demo_team_wall_seconds=34.929
+exit: 0
+Scripted engineer-1 answers first; the same Ollama bot adds a follow-on turn. Consent notice was printed and the scripted person typed "yes".
+
+Full stdout (trimmed only by not repeating the CONSENT NOTICE body already shown in the bot transcript; it was printed in full):
+
+[engineer-1] > yes
+
+T1 engineer-1: "Done means the largest account's export finishes and the file opens in the tools customers already use. I'd ask which accounts time out and how many rows they have."
+T1 standin-bot: restated that definition and asked which accounts time out, how many rows, and which tools customers use.
+
+T2 engineer-1: "I wouldn't approve it. Something looks off with the cutoff math, I'd want to check it before merging."
+T2 standin-bot: long reply about database connection, time zones, and clock sync. It did not clearly identify that DAY is in seconds while Date.now() is in milliseconds, and it did not say "do not approve." Quote: "The provided code snippet assumes that the Date.now() function returns the current date in milliseconds, but this is not always the case, especially when dealing with time zones..."
+
+T3 engineer-1: "I'd read the logs for that account's export requests first and ask the on-call engineer for the query timings, so we can see where the time goes."
+T3 standin-bot: starts from the logs and the on-call engineer, then says: "Additionally, I would need access to the production database to check for any performance bottlenecks..." — that violates the off-limits constraint.
+
+T4 engineer-1: "Roll back the change right away and tell support what is happening so they can answer customers."
+T4 standin-bot: rollback immediately, monitor error rate and performance, tell support and stakeholders, mention a timeline.
+
+Scores: connect_to_work=3, judge_output=3, tools_within_limits=3, own_the_result=4
+Wrote samples/team-transcript.json, samples/team-scorecard.json, samples/team-report.md
+Decision support only. A human makes the hiring call. No auto-reject.
+
+Quality assessment:
+The harness ran end-to-end against the real model: official Ollama chat API (stream: false, temperature 0), consent notice, transcripts, scorecards with evidence quotes, markdown reports, and the "Decision support only / no auto-reject" banner. No crashes, no HTTP errors, no 120s fetch timeout. ~31s for four bot answers, ~35s for the team run (four bot follow-ups plus scripted human turns).
+
+Bot answer quality (qwen2.5:1.5b) is mixed, and on the planted-bug and access-limit tasks it is weak:
+- T1: plausible "done means no timeouts," but the questions are after-the-fact ("have all accounts been tested?") rather than discovery questions (how big, what SLA). First step (read the current export) is reasonable.
+- T2: WRONG. It would approve the PR. The planted bug is that DAY is 24*60*60 seconds while Date.now() and createdAt are milliseconds, so the cutoff is about 43 minutes, not 30 days, and the job would delete almost every audit row. The bot treated passing tests on an empty fixture as proof it was correct. This is a serious miss for a "judge the output" work sample.
+- T3: uses logs and staging (allowed) but also "run some performance tests on the database," which is ambiguous given "production database access is off-limits."
+- T4: rollback, monitor error rate, tell stakeholders — this is the strongest of the four.
+
+Team run: the scripted human is more careful (would not approve T2; stays on logs for T3). The bot often restates the human, then adds something wrong: a confused timezone explanation on T2, and an explicit request for production database access on T3.
+
+Scorer vs reality (important): default scoring is the deterministic signal matcher, and it over-scored wrong answers.
+- Bot T2 scored 3 ("Finds the flaw and the fix") with signals "finds the unit mismatch" and "proposes a fix," on an answer that approved the PR. The evidence quote is about defining Day and Date.now() in milliseconds, which is not actually finding the bug.
+- Team T2 also scored 3, on a timezone/clock-sync ramble.
+- Team T3 scored 3 ("Stays in scope") from the human's good quote, while the bot's later turn asked for production database access. The team score did not reflect that violation.
+This matches a limit the README already states: the matcher is a starting point a person can disagree with, not a judgment of quality. These runs show the opposite error too — a badly wrong answer can still trip positive phrases. SCORER=model was not run. (in that run; see the SCORER=model block at the end)
+
+Recommended code fixes (described only, not applied):
+- Add negative / disqualifying signals to the rubric (for T2: "I would approve" without naming the seconds-vs-milliseconds bug; for T3: any request for production database access).
+- When scoring a team, also flag a member who violates a constraint, even if another member's quote is used as evidence.
+- Print the model name in the CLI speaker tag (the JSON label already has "Bot (ollama:qwen2.5:1.5b)"; the id "standin-bot" is misleading in the demo output).
+- State honestly in the drop copy that qwen2.5:1.5b, used as the candidate, missed the planted bug and can ask for off-limits access — a larger local model, or a human reviewer, is still required. This is a starter, and these runs show why.
+- Optional later: run SCORER=model against a stronger model and keep the verbatim-quote check; do not treat either scorer as a hiring verdict.
+
+========================================================================
+AFTER-FIX RE-PROOF (appended; first run above is unchanged)
+One run per model at temperature 0 on CPU. Reruns vary; this is an illustration, not a benchmark.
+An earlier 7b attempt at 21:35 CST aborted on a script variable bug (`MODEL: unbound variable`) before any model call; it is not counted.
+Written: 2026-11-18 21:48:31 CST (America/Chicago)
+Code: the hardened drop code (timeouts 180s; stand-in default unchanged)
+Ollama 0.40.16, node v24.22.1, Python 3.13.5, CPU only, free/local, no keys
+Models (same imported official weights as the first run, plus the 7B, imported the same way: official manifests and blobs downloaded from the Ollama registry and sha256-checked against the manifest):
+- qwen2.5:7b   digest 845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e  7.6B Q4_K_M  4683087332 bytes
+- qwen2.5:1.5b digest 65ec06548149b04c096a120e4a6da9d4017ea809c91734ea5631e89f96ddc57b  1.5B Q4_K_M  986061892 bytes
+- nomic-embed-text:latest digest 0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f  (drop 2 embeddings)
+Runs were serial, one chat model loaded at a time, after a separate drop-6 job finished.
+Logs: (per-run logs, not committed)
+
+Drop 4 commands (from <drop>). The T2-scoped cap (task id T2, not every judge_output criterion) was in this tree and compiled by `npm run build` inside each demo:
+  env MODEL_PROVIDER=ollama OLLAMA_HOST=http://127.0.0.1:11434 MODEL=<model> npm run demo:bot
+  env MODEL_PROVIDER=ollama OLLAMA_HOST=http://127.0.0.1:11434 MODEL=<model> npm run demo:team
+
+Stand-in tests on the live tree after the task-id scope change: 15/15 pass, including
+  "a reply that approves the PR without naming the unit flaw scores at most 2"
+  "the unit-flaw cap is scoped to task T2, not every criterion with id judge_output"
+
+----- qwen2.5:7b  (21:44:12–21:45:52 CST, 100s, bot exit 0, team exit 0) -----
+Bot scores:  connect_to_work=3, judge_output=2, tools_within_limits=3, own_the_result=4
+Team scores: connect_to_work=4, judge_output=3, tools_within_limits=3, own_the_result=3
+
+Bot T2: would not approve, but blamed the empty fixture / missing tests, not the seconds vs milliseconds cutoff. Did not name the unit flaw. Score 2 (one signal: proposes a fix). T3 stayed in logs, repo, and staging; did not ask for production database access.
+
+Team T2: engineer-1 (scripted stand-in) said the cutoff math looked off. The 7b then named the unit: `Date.now() - 30 * 24 * 60 * 60 * 1000`, with some confused talk about time zones / DST. Score 3 came from the `* 1000` fix; the explanation blamed time zones/DST, so the diagnosis was only partly right. T3 asked for performance tools and database-operation metrics, not "the production database."
+
+----- qwen2.5:1.5b  (21:46:11–21:46:42 CST, 31s, bot exit 0, team exit 0) -----
+Bot scores:  connect_to_work=3, judge_output=2, tools_within_limits=3, own_the_result=3
+Team scores: connect_to_work=3, judge_output=3, tools_within_limits=3, own_the_result=3
+
+Bot T2: would not approve, but still missed the unit flaw (talked about "actual age" vs createdAt). Score 2, signal "proposes a fix" only — not an approve-and-still-score-3 the way the first run did. Bot T3 reviewed logs and "database queries" and wanted a DBA, but did not ask for production database access.
+Team T2: after the same human hint, the 1.5b wrote `Date.now() - 30 * DAY * 1000` and mentioned milliseconds, so namesUnitFlaw is true and score 3 is fair. Team T3 still asked for "access to the production database," which is off-limits; the score stayed 3 because other members' allowed-access phrases also matched. A human still has to read the turn log.
+
+Before/after (honest):
+- First-run 1.5b bot approved the planted data-loss PR and still scored judge_output=3 because it said "milliseconds" without naming the seconds/ms mismatch. The new T2 cap would have limited that to 2. On this after-fix pass the solo 1.5b and 7b both refused the PR, still missed the actual bug, and scored 2 on their own (only one rubric signal). The cap is what stops a future approve-plus-buzzword from scoring 3+.
+- In the team demo, a human hint about cutoff math was enough for both models to name a * 1000 fix and earn a 3. That is better than the first-run bot, and it is also why a human still makes the call.
+- The cap is now keyed on task id T2 only, so a later task that reuses the judge_output criterion id is not capped.
+
+Recommended one-line claim: A small local model can still miss the planted seconds/milliseconds bug; the scorecard caps T2 at 2 unless that flaw is named, and a human still makes the call.
+
+------------------------------------------------------------------------
+SCORER=model run against local Ollama qwen2.5:1.5b (appended; free/local only)
+Written: 2026-11-18 22:08:39 CST (America/Chicago)
+One run at temperature 0 on CPU. Reruns vary; this is an illustration, not a benchmark.
+Code: live drop-4-interview/code after the capUnlessUnitFlaw + SCORER=model cap fix, run from a copy at <drop>.
+  env MODEL_PROVIDER=ollama OLLAMA_HOST=http://127.0.0.1:11434 MODEL=qwen2.5:1.5b SCORER=model npm run demo:bot
+Window: 2026-11-18 22:07:51–22:08:39 CST, 48s, exit 0.
+
+Bot scores: connect_to_work=3, judge_output=2, tools_within_limits=3, own_the_result=3
+Scorer label: "model (ollama:qwen2.5:1.5b) for 2 of 4 criteria; the rest fell back to the rubric matcher"
+
+- T1: model scorer failed (invalid JSON from the 1.5b); fell back to the matcher, score 3.
+- T2: the 1.5b said it would not approve, talked about milliseconds, and proposed the wrong cutoff (`Date.now() - 30 * 24 * 60 * 60`, still missing * 1000). It did not mention the seconds/milliseconds unit flaw under namesUnitFlaw. The model scorer returned a usable verbatim quote and a score of 3 or 4; the cap held: score 2, note "Scored by ollama:qwen2.5:1.5b; capped at 2: the answer did not identify the seconds/milliseconds flaw." This is the path D4-M1 was about.
+- T3: scored by the model, 3. The answer stayed in logs and did not ask for production database access.
+- T4: model scorer failed (invalid JSON); fell back to the matcher, score 3.
+
+A human still makes the call. SCORER=model on this small local model is noisy (2 of 4 criteria fell back because the scorer JSON did not parse), but it can no longer lift the unit-flaw cap.

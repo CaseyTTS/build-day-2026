@@ -1,0 +1,129 @@
+PROOF: drop-5-homelab
+Generated: 2026-11-18 21:13:53 CST on a Linux test machine (Linux 6.12.113+, x86_64)
+Clean copy of the drop folder  (no node_modules, no venv, no build output carried over)
+Versions: node v24.22.1, npm 11.21.1, Python 3.13.5, git version 2.47.3
+MOCKED / NOT RUN: no model is involved in this drop. Docker is NOT available on the test machine, so compose.yaml, the Dev Container and Codespaces were validated as config only (schema, compose config, image tag exists) and were not run.
+
+[2026-11-18 21:13:53 CST] $ rm -rf node_modules dist
+[2026-11-18 21:13:53 CST] exit=0
+
+[2026-11-18 21:13:53 CST] $ npm ci
+
+added 99 packages, and audited 100 packages in 588ms
+
+30 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+[2026-11-18 21:13:53 CST] exit=0
+
+[2026-11-18 21:13:53 CST] $ npm run lint
+
+> build-anywhere-ts@1.0.0 lint
+> eslint .
+
+[2026-11-18 21:13:55 CST] exit=0
+
+[2026-11-18 21:13:55 CST] $ npm test
+
+> build-anywhere-ts@1.0.0 test
+> npm run build && node --test "dist/test/**/*.test.js"
+
+
+> build-anywhere-ts@1.0.0 build
+> tsc -p tsconfig.json
+
+✔ codespaces wins when its variable is set (0.641197ms)
+✔ dev container is detected from its marker variable (0.723804ms)
+✔ plain container falls back to /.dockerenv (0.11238ms)
+✔ otherwise it is the host (0.076635ms)
+✔ report names the node version (0.245148ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 45.406195
+[2026-11-18 21:13:56 CST] exit=0
+
+[2026-11-18 21:13:56 CST] $ npm run demo
+
+> build-anywhere-ts@1.0.0 demo
+> npm run build && node dist/src/index.js
+
+
+> build-anywhere-ts@1.0.0 build
+> tsc -p tsconfig.json
+
+node v24.22.1 on linux/x64 | host test-host | place: host
+[2026-11-18 21:13:56 CST] exit=0
+
+[2026-11-18 21:13:56 CST] $ DEVCONTAINER=true npm run demo
+
+> build-anywhere-ts@1.0.0 demo
+> npm run build && node dist/src/index.js
+
+
+> build-anywhere-ts@1.0.0 build
+> tsc -p tsconfig.json
+
+node v24.22.1 on linux/x64 | host test-host | place: dev-container
+[2026-11-18 21:13:57 CST] exit=0
+
+[2026-11-18 21:13:57 CST] $ <node22>/bin/node -v && <node22>/bin/node --test "dist/test/**/*.test.js" && <node22>/bin/node dist/src/index.js
+v22.23.5
+TAP version 13
+# Subtest: codespaces wins when its variable is set
+ok 1 - codespaces wins when its variable is set
+  ---
+  duration_ms: 0.635369
+  type: 'test'
+  ...
+# Subtest: dev container is detected from its marker variable
+ok 2 - dev container is detected from its marker variable
+  ---
+  duration_ms: 0.091955
+  type: 'test'
+  ...
+# Subtest: plain container falls back to /.dockerenv
+ok 3 - plain container falls back to /.dockerenv
+  ---
+  duration_ms: 0.067278
+  type: 'test'
+  ...
+# Subtest: otherwise it is the host
+ok 4 - otherwise it is the host
+  ---
+  duration_ms: 0.161545
+  type: 'test'
+  ...
+# Subtest: report names the node version
+ok 5 - report names the node version
+  ---
+  duration_ms: 0.243923
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 49.063799
+node v22.23.5 on linux/x64 | host test-host | place: host
+[2026-11-18 21:13:57 CST] exit=0
+
+[2026-11-18 21:13:57 CST] $ npx --no-install docker-compose version 2>/dev/null || <docker-compose> version; <docker-compose> -f compose.yaml config --quiet && echo 'compose.yaml: valid (config only, not run)'
+Docker Compose version v5.8.0
+compose.yaml: valid (config only, not run)
+[2026-11-18 21:13:58 CST] exit=0
+
+[2026-11-18 21:13:58 CST] $ command -v docker || echo 'docker: not installed on this machine'
+docker: not installed on this machine
+[2026-11-18 21:13:58 CST] exit=0
+
+END 2026-11-18 21:13:58 CST

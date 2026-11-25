@@ -1,0 +1,23 @@
+{
+  "name": "builder-interview-harness",
+  "version": "1.0.0",
+  "description": "Run one work-sample interview against a person, a bot, or a team and draft an evidence-backed scorecard. Decision support only.",
+  "license": "MIT",
+  "author": "CornerStone AI Research Lab",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test dist/test/harness.test.js",
+    "demo:bot": "npm run build && node dist/src/cli.js bot",
+    "demo:team": "npm run build && node dist/src/cli.js team",
+    "interview": "npm run build --silent && node dist/src/cli.js human"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "typescript": "5.9.3"
+  }
+}

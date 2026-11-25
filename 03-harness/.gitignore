@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.env
+*.jsonl.out
+decisions.jsonl
+review_queue.jsonl
+corrections.jsonl
+index.json
+audit*.jsonl

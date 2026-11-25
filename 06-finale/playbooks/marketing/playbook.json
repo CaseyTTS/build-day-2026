@@ -1,0 +1,61 @@
+{
+  "name": "marketing",
+  "title": "Marketing content desk",
+  "description": "Content requests triaged, drafts grounded in brand and source docs, approval required before anything is published. The publish tool is always gated and is a no-op stub: nothing can be published from this repo.",
+  "inbox": "inbox.jsonl",
+  "triage": {
+    "labels": {
+      "blog_post": ["blog", "article", "long-form"],
+      "social_post": ["linkedin", "social", "x post", "short post"],
+      "event_promo": ["webinar", "event", "meetup"],
+      "correction": ["correction", "typo", "republish", "wrong date"],
+      "writer_for_seat": ["freelance", "writer for the", "content seat"]
+    },
+    "routes": { "blog_post": "content-team", "social_post": "social-team", "event_promo": "events-team", "correction": "editor-on-call", "writer_for_seat": "content-lead" },
+    "urgent_terms": ["today", "asap", "right now"],
+    "always_human_terms": ["republish", "delete", "embargo"],
+    "always_human_labels": ["correction", "writer_for_seat"],
+    "review_below": 0.6
+  },
+  "rag": { "docs": "docs", "default_groups": ["everyone", "marketing"], "min_score": 0.1, "mode": "draft" },
+  "harness": {
+    "policy": {
+      "save_draft": "allow",
+      "route_to_queue": "allow",
+      "share_scorecard": "allow",
+      "publish": "ask",
+      "delete_record": "deny"
+    }
+  },
+  "actions": {
+    "blog_post": [
+      { "tool": "save_draft", "args": { "path": "{draft_path}", "content": "{draft}" } },
+      { "tool": "route_to_queue", "args": { "queue": "{route}", "id": "{id}" } },
+      { "tool": "publish", "args": { "id": "{id}", "channel": "blog", "path": "{draft_path}" }, "why": "nothing is published without a person's approval" }
+    ],
+    "social_post": [
+      { "tool": "save_draft", "args": { "path": "{draft_path}", "content": "{draft}" } },
+      { "tool": "route_to_queue", "args": { "queue": "{route}", "id": "{id}" } },
+      { "tool": "publish", "args": { "id": "{id}", "channel": "social", "path": "{draft_path}" }, "why": "nothing is published without a person's approval" }
+    ],
+    "event_promo": [
+      { "tool": "save_draft", "args": { "path": "{draft_path}", "content": "{draft}" } },
+      { "tool": "route_to_queue", "args": { "queue": "{route}", "id": "{id}" } },
+      { "tool": "publish", "args": { "id": "{id}", "channel": "events page", "path": "{draft_path}" }, "why": "nothing is published without a person's approval" }
+    ],
+    "correction": [
+      { "tool": "save_draft", "args": { "path": "{draft_path}", "content": "{draft}" } },
+      { "tool": "route_to_queue", "args": { "queue": "{route}", "id": "{id}" } }
+    ],
+    "writer_for_seat": [
+      { "tool": "share_scorecard", "args": { "id": "{id}", "content": "{report}" } },
+      { "tool": "route_to_queue", "args": { "queue": "{route}", "id": "{id}" } }
+    ]
+  },
+  "interviewer": {
+    "labels": ["writer_for_seat"],
+    "rubric": "rubric.json",
+    "tasks": "tasks.json",
+    "seat_note": "Content seat. Whoever fills it, a person, a bot or a pair, drafts under this playbook: drafts are saved for review and publish always waits on a person."
+  }
+}

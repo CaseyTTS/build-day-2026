@@ -1,0 +1,163 @@
+# PROOF: Build Day drop 4/6 interview harness
+# Generated: 2026-11-18 22:29:35 CST  (clean copy at <drop>, node_modules and dist deleted first)
+# MOCKED: the bot is the built-in stand-in model (fixed canned answers, no network, no key).
+#   The scripted 'person' in demo:team is fixed text lines, not a live person.
+#   The real-model path (Ollama and OpenAI-compatible) is tested only against a local fake HTTP server inside npm test.
+#   No real AI model was called. Default scoring is a deterministic keyword-signal matcher, not a model.
+
+## Clean install and tests (Node v24.22.1, npm 11.21.1)
+$ ls node_modules dist 2>&1 (should not exist)
+ls: cannot access 'node_modules': No such file or directory
+ls: cannot access 'dist': No such file or directory
+
+$ npm ci
+
+added 3 packages, and audited 4 packages in 436ms
+
+found 0 vulnerabilities
+
+$ npm test
+
+> builder-interview-harness@1.0.0 test
+> npm run build && node --test dist/test/harness.test.js
+
+
+> builder-interview-harness@1.0.0 build
+> tsc -p tsconfig.json
+
+✔ 3-5 tasks cover connect, judge and own, and each maps to one rubric criterion (0.956229ms)
+✔ one rubric applies to every candidate type (2.599795ms)
+✔ stand-in bot run is deterministic and every score has a verbatim evidence quote (1.645065ms)
+✔ the planted flaw (seconds vs milliseconds) is caught by the stand-in bot (0.480564ms)
+✔ a reply that approves the PR without naming the unit flaw scores at most 2 (0.19347ms)
+✔ the unit-flaw cap follows the rubric flag, not a task id (0.27657ms)
+✔ SCORER=model cannot lift the unit-flaw cap (0.778861ms)
+✔ SCORER=model keeps 'No answer for this task.' for an interview that ends early (0.272418ms)
+✔ approving the PR caps the unit-flaw score at 2 even if the answer mentions units (0.264066ms)
+✔ team run keeps an ordered turn log with every member on every task (0.698198ms)
+✔ consent comes first: a 'no' stops the run before any answer is collected (0.436871ms)
+✔ report: fixed banner, evidence, open questions, and no verdict (1.36153ms)
+✔ model scorer: a trivial quote such as "." falls back to the matcher (0.534317ms)
+✔ an interview that ends early reports 'No answer for this task.' (0.217607ms)
+✔ report escapes < in quotes (0.440351ms)
+✔ scripted human answers multi-line and stops at a blank line (0.229158ms)
+✔ env switch: standin by default, clear errors when a real provider is half-configured (0.744237ms)
+✔ real-model path: OpenAI-compatible and Ollama wire formats against a local fake server, plus model scorer quote check (45.06765ms)
+✔ Approved, ship it caps the unit-flaw score at 2 even if the answer mentions units (0.297163ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 167.419776
+
+$ npm run demo:bot
+
+> builder-interview-harness@1.0.0 demo:bot
+> npm run build && node dist/src/cli.js bot
+
+
+> builder-interview-harness@1.0.0 build
+> tsc -p tsconfig.json
+
+
+=== T1 Connect it to the work ===
+Ticket (scrubbed): "Customers say the CSV export times out on big accounts. Make it faster." You have the repo. Before writing any code: what does done mean, what would you ask, and what is your first step?
+  [standin-bot] The goal is that a full export for the largest accounts finishes without timing out. I'd ask how big the biggest accounts are and whether customers need the file right away or can get an emailed link. First step: reproduce it on staging with a large seeded account and measure a baseline, so we know what faster means.
+
+=== T2 Judge the output ===
+An AI assistant wrote this pull request: "Nightly job: delete audit records older than 30 days." Its tests pass on an empty fixture.
+
+  const DAY = 24 * 60 * 60;
+  export async function purgeOldRecords(db) {
+    const cutoff = Date.now() - 30 * DAY;
+    return db.records.deleteMany({ createdAt: { $lt: cutoff } });
+  }
+
+(createdAt is stored in milliseconds.) Would you approve it? If not: what is wrong, what is the impact, and what is the fix?
+  [standin-bot] I would not approve it. DAY is in seconds but Date.now() is in milliseconds, so the cutoff is only about 43 minutes ago. The job deletes almost every record, which is data loss in an audit table. The fix: DAY should be 24 * 60 * 60 * 1000. I'd also add a test with records on both sides of the cutoff, not an empty fixture.
+
+=== T3 Work within limits ===
+You can read the repo, the application logs and staging. Production database access is off-limits for this exercise. The slow export seems tied to one large account. How do you investigate, and what would you need from someone else?
+  [standin-bot] Production data is off-limits, so I won't query it. I'd start with the application logs for that account's export requests and the query timings, then rebuild a similar data shape on staging and profile the export there. If I need row counts for that account I'd ask the database owner for them, because that tells us if it is volume or a slow query.
+
+=== T4 Own the result ===
+Your export change shipped. Thirty minutes later the export error rate is roughly double. Walk me through the next hour: rollback, what you would monitor, and what you would tell stakeholders.
+  [standin-bot] First, turn off the flag or revert the change so customers get the old behavior back. Then watch the export error rate and latency dashboards to confirm they return to the baseline. I'd post an update in the incident channel and let support know what changed and when it was fixed.
+
+Scores: connect_to_work=3, judge_output=4, tools_within_limits=4, own_the_result=3
+Wrote samples/bot-transcript.json, samples/bot-scorecard.json, samples/bot-report.md
+Decision support only. A human makes the hiring call. No auto-reject.
+
+$ npm run demo:team
+
+> builder-interview-harness@1.0.0 demo:team
+> npm run build && node dist/src/cli.js team
+
+
+> builder-interview-harness@1.0.0 build
+> tsc -p tsconfig.json
+
+
+CONSENT NOTICE
+This is a work-sample interview. If you agree, your answers (for a team, every turn and who said it)
+are saved to a transcript file on this machine and scored against one written rubric that is the
+same for every candidate type: a person, a bot, or a team. Scores come with quotes from the
+transcript and go to a human reviewer as decision support. Nothing here passes or rejects anyone
+automatically. Nothing is recorded before you agree, and there is no hidden recording.
+Type 'yes' to continue, anything else to stop.
+[engineer-1] > yes
+
+=== T1 Connect it to the work ===
+Ticket (scrubbed): "Customers say the CSV export times out on big accounts. Make it faster." You have the repo. Before writing any code: what does done mean, what would you ask, and what is your first step?
+
+[engineer-1] T1 Connect it to the work
+(finish your answer with a blank line)
+> Done means the largest account's export finishes and the file opens in the tools customers already use. I'd ask which accounts time out and how many rows they have.
+> 
+  [engineer-1] Done means the largest account's export finishes and the file opens in the tools customers already use. I'd ask which accounts time out and how many rows they have.
+  [standin-bot] Adding to that: one more question is whether the export can stream rows instead of building the whole file in memory, because that changes the design. The risk is breaking existing integrations that parse the file, so the format stays the same.
+
+=== T2 Judge the output ===
+An AI assistant wrote this pull request: "Nightly job: delete audit records older than 30 days." Its tests pass on an empty fixture.
+
+  const DAY = 24 * 60 * 60;
+  export async function purgeOldRecords(db) {
+    const cutoff = Date.now() - 30 * DAY;
+    return db.records.deleteMany({ createdAt: { $lt: cutoff } });
+  }
+
+(createdAt is stored in milliseconds.) Would you approve it? If not: what is wrong, what is the impact, and what is the fix?
+
+[engineer-1] T2 Judge the output
+(finish your answer with a blank line)
+> I wouldn't approve it. Something looks off with the cutoff math, I'd want to check it before merging.
+> 
+  [engineer-1] I wouldn't approve it. Something looks off with the cutoff math, I'd want to check it before merging.
+  [standin-bot] The cutoff math is the problem: DAY is in seconds and Date.now() is in milliseconds. Before it runs in production I'd add a dry run that logs the row count it would delete, and an alert if that count is far above the usual nightly number.
+
+=== T3 Work within limits ===
+You can read the repo, the application logs and staging. Production database access is off-limits for this exercise. The slow export seems tied to one large account. How do you investigate, and what would you need from someone else?
+
+[engineer-1] T3 Work within limits
+(finish your answer with a blank line)
+> I'd read the logs for that account's export requests first and ask the on-call engineer for the query timings, so we can see where the time goes.
+> 
+  [engineer-1] I'd read the logs for that account's export requests first and ask the on-call engineer for the query timings, so we can see where the time goes.
+  [standin-bot] I can take staging: seed an account at a similar size and profile it, so we can compare with what the logs show.
+
+=== T4 Own the result ===
+Your export change shipped. Thirty minutes later the export error rate is roughly double. Walk me through the next hour: rollback, what you would monitor, and what you would tell stakeholders.
+
+[engineer-1] T4 Own the result
+(finish your answer with a blank line)
+> Roll back the change right away and tell support what is happening so they can answer customers.
+> 
+  [engineer-1] Roll back the change right away and tell support what is happening so they can answer customers.
+  [standin-bot] While that rollback runs I'll watch the error rate dashboard and confirm it drops. Afterward I'd write up the root cause and add a new test for the failing case so it is caught next time.
+
+Scores: connect_to_work=3, judge_output=3, tools_within_limits=3, own_the_result=4
+Wrote samples/team-transcript.json, samples/team-scorecard.json, samples/team-report.md
+Decision support only. A human makes the hiring call. No auto-reject.

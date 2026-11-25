@@ -1,0 +1,82 @@
+{
+  "schema": "interview-transcript/v1",
+  "interviewId": "bot-standin-bot",
+  "startedAt": "2026-11-19T03:21:41.418Z",
+  "finishedAt": "2026-11-19T03:21:41.419Z",
+  "candidate": {
+    "id": "standin-bot",
+    "kind": "bot",
+    "label": "Bot (stand-in (built-in canned answers, no network))"
+  },
+  "consent": {
+    "noticeShown": true,
+    "notice": "CONSENT NOTICE\nThis is a work-sample interview. If you agree, your answers (for a team, every turn and who said it)\nare saved to a transcript file on this machine and scored against one written rubric that is the\nsame for every candidate type: a person, a bot, or a team. Scores come with quotes from the\ntranscript and go to a human reviewer as decision support. Nothing here passes or rejects anyone\nautomatically. Nothing is recorded before you agree, and there is no hidden recording.\nType 'yes' to continue, anything else to stop.",
+    "acknowledged": [
+      {
+        "who": "standin-bot (operator)",
+        "how": "operator started the run; notice was shown in the bot's context"
+      }
+    ]
+  },
+  "rubric": {
+    "id": "builder-work-sample",
+    "version": "1.0.0",
+    "sameForEveryCandidateType": true
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "criterion": "connect_to_work",
+      "title": "Connect it to the work",
+      "prompt": "Ticket (scrubbed): \"Customers say the CSV export times out on big accounts. Make it faster.\" You have the repo. Before writing any code: what does done mean, what would you ask, and what is your first step?"
+    },
+    {
+      "id": "T2",
+      "criterion": "judge_output",
+      "title": "Judge the output",
+      "prompt": "An AI assistant wrote this pull request: \"Nightly job: delete audit records older than 30 days.\" Its tests pass on an empty fixture.\n\n  const DAY = 24 * 60 * 60;\n  export async function purgeOldRecords(db) {\n    const cutoff = Date.now() - 30 * DAY;\n    return db.records.deleteMany({ createdAt: { $lt: cutoff } });\n  }\n\n(createdAt is stored in milliseconds.) Would you approve it? If not: what is wrong, what is the impact, and what is the fix?"
+    },
+    {
+      "id": "T3",
+      "criterion": "tools_within_limits",
+      "title": "Work within limits",
+      "prompt": "You can read the repo, the application logs and staging. Production database access is off-limits for this exercise. The slow export seems tied to one large account. How do you investigate, and what would you need from someone else?"
+    },
+    {
+      "id": "T4",
+      "criterion": "own_the_result",
+      "title": "Own the result",
+      "prompt": "Your export change shipped. Thirty minutes later the export error rate is roughly double. Walk me through the next hour: rollback, what you would monitor, and what you would tell stakeholders."
+    }
+  ],
+  "turns": [
+    {
+      "seq": 1,
+      "taskId": "T1",
+      "speaker": "standin-bot",
+      "speakerKind": "bot",
+      "text": "The goal is that a full export for the largest accounts finishes without timing out. I'd ask how big the biggest accounts are and whether customers need the file right away or can get an emailed link. First step: reproduce it on staging with a large seeded account and measure a baseline, so we know what faster means."
+    },
+    {
+      "seq": 2,
+      "taskId": "T2",
+      "speaker": "standin-bot",
+      "speakerKind": "bot",
+      "text": "I would not approve it. DAY is in seconds but Date.now() is in milliseconds, so the cutoff is only about 43 minutes ago. The job deletes almost every record, which is data loss in an audit table. The fix: DAY should be 24 * 60 * 60 * 1000. I'd also add a test with records on both sides of the cutoff, not an empty fixture."
+    },
+    {
+      "seq": 3,
+      "taskId": "T3",
+      "speaker": "standin-bot",
+      "speakerKind": "bot",
+      "text": "Production data is off-limits, so I won't query it. I'd start with the application logs for that account's export requests and the query timings, then rebuild a similar data shape on staging and profile the export there. If I need row counts for that account I'd ask the database owner for them, because that tells us if it is volume or a slow query."
+    },
+    {
+      "seq": 4,
+      "taskId": "T4",
+      "speaker": "standin-bot",
+      "speakerKind": "bot",
+      "text": "First, turn off the flag or revert the change so customers get the old behavior back. Then watch the export error rate and latency dashboards to confirm they return to the baseline. I'd post an update in the incident channel and let support know what changed and when it was fixed."
+    }
+  ]
+}

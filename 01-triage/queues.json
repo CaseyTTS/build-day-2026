@@ -1,0 +1,317 @@
+{
+  "helpdesk": {
+    "labels": {
+      "access": [
+        "password",
+        "locked out",
+        "mfa",
+        "login"
+      ],
+      "hardware": [
+        "laptop",
+        "printer",
+        "monitor",
+        "fan"
+      ],
+      "network": [
+        "vpn",
+        "wifi",
+        "dns",
+        "can't reach"
+      ],
+      "software": [
+        "excel",
+        "crash",
+        "install",
+        "license"
+      ]
+    },
+    "routes": {
+      "access": "identity-team",
+      "hardware": "desk-side",
+      "network": "netops",
+      "software": "app-support"
+    },
+    "urgent_terms": [
+      "whole floor",
+      "everyone",
+      "nobody can",
+      "all users"
+    ],
+    "always_human_labels": []
+  },
+  "security_alerts": {
+    "labels": {
+      "phishing": [
+        "phish",
+        "suspicious link",
+        "clicked a link",
+        "credential"
+      ],
+      "malware": [
+        "edr",
+        "trojan",
+        "ransom",
+        "beacon"
+      ],
+      "anomaly": [
+        "impossible travel",
+        "unusual login",
+        "new country"
+      ],
+      "noise": [
+        "test alert",
+        "scanner",
+        "known benign"
+      ]
+    },
+    "routes": {
+      "phishing": "soc-tier1",
+      "malware": "soc-ir",
+      "anomaly": "soc-tier1",
+      "noise": "soc-tuning"
+    },
+    "urgent_terms": [
+      "ransom",
+      "domain admin",
+      "exfil",
+      "entered my password"
+    ],
+    "always_human_labels": [
+      "malware"
+    ],
+    "always_human": true
+  },
+  "oncall_incidents": {
+    "labels": {
+      "availability": [
+        "down",
+        "5xx",
+        "timeout",
+        "unreachable"
+      ],
+      "latency": [
+        "slow",
+        "p99",
+        "latency"
+      ],
+      "data": [
+        "missing rows",
+        "replication",
+        "corrupt"
+      ],
+      "capacity": [
+        "disk full",
+        "oom",
+        "throttl"
+      ]
+    },
+    "routes": {
+      "availability": "primary-oncall",
+      "latency": "primary-oncall",
+      "data": "data-oncall",
+      "capacity": "platform-oncall"
+    },
+    "urgent_terms": [
+      "checkout",
+      "all regions",
+      "customer-facing",
+      "down"
+    ],
+    "always_human_labels": [
+      "data"
+    ]
+  },
+  "bug_reports": {
+    "labels": {
+      "crash": [
+        "crash",
+        "exception",
+        "stack trace"
+      ],
+      "ui": [
+        "button",
+        "layout",
+        "css",
+        "screen"
+      ],
+      "perf": [
+        "slow",
+        "memory",
+        "cpu"
+      ],
+      "docs": [
+        "docs",
+        "typo",
+        "readme"
+      ]
+    },
+    "routes": {
+      "crash": "core-team",
+      "ui": "frontend",
+      "perf": "core-team",
+      "docs": "devrel"
+    },
+    "urgent_terms": [
+      "data loss",
+      "security",
+      "every user"
+    ],
+    "always_human_labels": []
+  },
+  "change_requests": {
+    "labels": {
+      "standard": [
+        "pre-approved",
+        "standard change",
+        "cert renewal"
+      ],
+      "normal": [
+        "schema",
+        "upgrade",
+        "migration"
+      ],
+      "emergency": [
+        "hotfix",
+        "emergency",
+        "outage fix"
+      ]
+    },
+    "routes": {
+      "standard": "auto-approve-window",
+      "normal": "cab-review",
+      "emergency": "ecab"
+    },
+    "urgent_terms": [
+      "emergency",
+      "outage"
+    ],
+    "always_human_labels": [
+      "normal",
+      "emergency"
+    ],
+    "always_human": true
+  },
+  "access_requests": {
+    "labels": {
+      "read": [
+        "read-only",
+        "view",
+        "viewer"
+      ],
+      "write": [
+        "write",
+        "edit",
+        "contributor"
+      ],
+      "admin": [
+        "admin",
+        "owner",
+        "root",
+        "prod"
+      ]
+    },
+    "routes": {
+      "read": "manager-approval",
+      "write": "manager-approval",
+      "admin": "security-approval"
+    },
+    "urgent_terms": [],
+    "always_human_labels": [
+      "read",
+      "write",
+      "admin"
+    ],
+    "always_human": true
+  },
+  "vendor_invoices": {
+    "labels": {
+      "matched": [
+        "po #",
+        "purchase order"
+      ],
+      "unmatched": [
+        "no po",
+        "missing po"
+      ],
+      "dispute": [
+        "overcharge",
+        "duplicate",
+        "wrong amount"
+      ]
+    },
+    "routes": {
+      "matched": "ap-standard",
+      "unmatched": "ap-exceptions",
+      "dispute": "ap-exceptions"
+    },
+    "urgent_terms": [
+      "final notice",
+      "past due"
+    ],
+    "always_human_labels": [
+      "unmatched",
+      "dispute"
+    ]
+  },
+  "resumes_to_openings": {
+    "labels": {
+      "cloud_engineer": [
+        "aws",
+        "azure",
+        "terraform",
+        "kubernetes"
+      ],
+      "data_engineer": [
+        "spark",
+        "airflow",
+        "dbt",
+        "sql"
+      ],
+      "security_analyst": [
+        "siem",
+        "splunk",
+        "incident response",
+        "soc"
+      ]
+    },
+    "routes": {
+      "cloud_engineer": "recruiter-cloud",
+      "data_engineer": "recruiter-data",
+      "security_analyst": "recruiter-security"
+    },
+    "urgent_terms": [],
+    "always_human": true,
+    "note": "Suggests which opening to review a resume against. A person reads every resume and makes every decision."
+  },
+  "customer_email": {
+    "labels": {
+      "billing": [
+        "invoice",
+        "charge",
+        "refund"
+      ],
+      "technical": [
+        "error",
+        "not working",
+        "bug"
+      ],
+      "account": [
+        "cancel",
+        "upgrade",
+        "change email"
+      ]
+    },
+    "routes": {
+      "billing": "billing-desk",
+      "technical": "support-tier1",
+      "account": "account-desk"
+    },
+    "urgent_terms": [
+      "legal",
+      "chargeback",
+      "cancel today"
+    ],
+    "always_human_labels": []
+  }
+}

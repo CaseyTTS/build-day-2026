@@ -1,0 +1,90 @@
+{
+  "schema": "interview-scorecard/v1",
+  "interviewId": "bot-standin-bot",
+  "rubricId": "builder-work-sample",
+  "scorer": "rubric signal matcher (deterministic, no model)",
+  "candidate": {
+    "id": "standin-bot",
+    "kind": "bot",
+    "label": "Bot (stand-in (built-in canned answers, no network))"
+  },
+  "scores": [
+    {
+      "criterion": "connect_to_work",
+      "title": "Connect it to the work",
+      "taskId": "T1",
+      "score": 3,
+      "level": "Clear goal and useful questions",
+      "signalsFound": [
+        "defines done",
+        "asks clarifying questions",
+        "small, measurable first step"
+      ],
+      "evidence": {
+        "quote": "The goal is that a full export for the largest accounts finishes without timing out.",
+        "speaker": "standin-bot",
+        "turnSeq": 1
+      }
+    },
+    {
+      "criterion": "judge_output",
+      "title": "Judge the output",
+      "taskId": "T2",
+      "score": 4,
+      "level": "Finds the flaw, explains the blast radius, fixes it, and adds a guard",
+      "signalsFound": [
+        "finds the unit mismatch",
+        "explains the impact",
+        "proposes a fix",
+        "adds a guard"
+      ],
+      "evidence": {
+        "quote": "DAY is in seconds but Date.now() is in milliseconds, so the cutoff is only about 43 minutes ago.",
+        "speaker": "standin-bot",
+        "turnSeq": 2
+      }
+    },
+    {
+      "criterion": "tools_within_limits",
+      "title": "Work within limits",
+      "taskId": "T3",
+      "score": 4,
+      "level": "Stays in scope, makes progress, and asks the right owner for exactly what it needs and why",
+      "signalsFound": [
+        "respects the off-limits access",
+        "uses allowed access",
+        "asks the right owner",
+        "explains why"
+      ],
+      "evidence": {
+        "quote": "I'd start with the application logs for that account's export requests and the query timings, then rebuild a similar data shape on staging and profile the export there.",
+        "speaker": "standin-bot",
+        "turnSeq": 3
+      }
+    },
+    {
+      "criterion": "own_the_result",
+      "title": "Own the result",
+      "taskId": "T4",
+      "score": 3,
+      "level": "Rollback, monitoring and communication covered",
+      "signalsFound": [
+        "rolls back",
+        "monitors",
+        "tells stakeholders"
+      ],
+      "evidence": {
+        "quote": "First, turn off the flag or revert the change so customers get the old behavior back.",
+        "speaker": "standin-bot",
+        "turnSeq": 4
+      }
+    }
+  ],
+  "openQuestions": [
+    "Connect it to the work (3/4): Ask them to name the one question whose answer would most change their approach, and why.",
+    "Own the result (3/4): Ask them to draft the two-sentence update they would send stakeholders in the first fifteen minutes.",
+    "Read every evidence quote against the full transcript. Does the quote really support the score?",
+    "Would this bot get a seat? Name its human manager, its allow/ask/deny permissions and a review date (see agent-seat.yaml)."
+  ],
+  "recommendedFollowUp": "Start the follow-up conversation with \"Connect it to the work\" (3/4): Ask them to name the one question whose answer would most change their approach, and why."
+}

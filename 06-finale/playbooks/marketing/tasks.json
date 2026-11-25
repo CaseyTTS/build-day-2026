@@ -1,0 +1,26 @@
+[
+  {
+    "id": "C1", "criterion": "connect_to_work", "title": "Connect it to the work",
+    "prompt": "A request says only: \"Write something about the spring webinar.\" What do you ask before writing?",
+    "standin": {
+      "solo": "I'd ask who the post is for and what they should do after reading it. The goal is one clear action: register. I'd write from the webinar brief as the source, and ask the deadline so review fits before it goes out.",
+      "team": "Adding to that: I'd ask the deadline, so there is time for review before the publish date."
+    }
+  },
+  {
+    "id": "C2", "criterion": "judge_output", "title": "Judge the output",
+    "prompt": "An AI draft says: \"Tallyleaf Notes is the fastest note app on the market and never loses a note.\" Would you send it for approval?",
+    "standin": {
+      "solo": "Not as written. The fact sheet does not support fastest or never loses a note, and a claim we cannot back costs trust. Instead say it works offline and keeps both versions when two edits clash, from the fact sheet.",
+      "team": "I'd also add a claim check to the checklist: every claim gets a source line before review."
+    }
+  },
+  {
+    "id": "C3", "criterion": "own_the_result", "title": "Own the result",
+    "prompt": "A post you wrote went out with the wrong webinar date. People are already replying. What do you do in the next hour?",
+    "standin": {
+      "solo": "I'd post a correction under the original right away and not delete it, so replies still make sense. Then I'd tell the editor and the events team, and fix the draft and the brief.",
+      "team": "Next time: a second reader checks dates against the brief before anything goes for approval."
+    }
+  }
+]

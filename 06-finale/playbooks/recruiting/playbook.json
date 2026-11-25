@@ -1,0 +1,73 @@
+{
+  "name": "recruiting",
+  "title": "Recruiting desk",
+  "description": "Inbound resumes and requests routed to open seats, grounded in job descriptions, with the interviewer scoring a person, a bot or a team on the same rubric. A human makes every decision.",
+  "inbox": "inbox.jsonl",
+  "triage": {
+    "labels": {
+      "cloud_engineer": ["aws", "azure", "terraform", "kubernetes"],
+      "data_engineer": ["spark", "airflow", "dbt", "sql"],
+      "help_desk_analyst": ["service desk", "help desk", "ticketing", "itil"],
+      "bot_for_seat": ["bot", "agent platform", "automation for the"],
+      "team_for_seat": ["team of", "pair", "pod"],
+      "candidate_question": ["next step", "interview process", "status of my application"]
+    },
+    "routes": {
+      "cloud_engineer": "seat-cloud-engineer",
+      "data_engineer": "seat-data-engineer",
+      "help_desk_analyst": "seat-help-desk-analyst",
+      "bot_for_seat": "hiring-manager-review",
+      "team_for_seat": "hiring-manager-review",
+      "candidate_question": "recruiting-coordinator"
+    },
+    "urgent_terms": [],
+    "always_human_labels": [],
+    "always_human": true
+  },
+  "rag": { "docs": "docs", "default_groups": ["everyone"], "min_score": 0.1, "mode": "answer" },
+  "harness": {
+    "policy": {
+      "route_to_queue": "allow",
+      "save_draft": "allow",
+      "share_scorecard": "allow",
+      "send_reply": "ask",
+      "update_candidate_status": "deny",
+      "delete_record": "deny"
+    }
+  },
+  "actions": {
+    "cloud_engineer": [
+      { "tool": "save_draft", "args": { "path": "{draft_path}", "content": "{draft}" }, "why": "recruiter note: which opening to read this resume against" },
+      { "tool": "share_scorecard", "args": { "id": "{id}", "content": "{report}" } },
+      { "tool": "route_to_queue", "args": { "queue": "{route}", "id": "{id}" } }
+    ],
+    "data_engineer": [
+      { "tool": "save_draft", "args": { "path": "{draft_path}", "content": "{draft}" }, "why": "recruiter note: which opening to read this resume against" },
+      { "tool": "share_scorecard", "args": { "id": "{id}", "content": "{report}" } },
+      { "tool": "route_to_queue", "args": { "queue": "{route}", "id": "{id}" } }
+    ],
+    "help_desk_analyst": [
+      { "tool": "save_draft", "args": { "path": "{draft_path}", "content": "{draft}" } },
+      { "tool": "route_to_queue", "args": { "queue": "{route}", "id": "{id}" } }
+    ],
+    "bot_for_seat": [
+      { "tool": "share_scorecard", "args": { "id": "{id}", "content": "{report}" } },
+      { "tool": "route_to_queue", "args": { "queue": "{route}", "id": "{id}" } }
+    ],
+    "team_for_seat": [
+      { "tool": "share_scorecard", "args": { "id": "{id}", "content": "{report}" } },
+      { "tool": "route_to_queue", "args": { "queue": "{route}", "id": "{id}" } }
+    ],
+    "candidate_question": [
+      { "tool": "save_draft", "args": { "path": "{draft_path}", "content": "{draft}" } },
+      { "tool": "send_reply", "args": { "id": "{id}", "to": "{from}", "content": "{draft}" }, "why": "a reply to a candidate goes out only after a person approves it" },
+      { "tool": "route_to_queue", "args": { "queue": "{route}", "id": "{id}" } }
+    ]
+  },
+  "interviewer": {
+    "labels": ["cloud_engineer", "data_engineer", "bot_for_seat", "team_for_seat"],
+    "rubric": "rubric.json",
+    "tasks": "tasks.json",
+    "seat_note": "Builder seat on the platform team. The same four work-sample tasks and one rubric for a person, a bot or a team (copied from Build Day drop 4)."
+  }
+}

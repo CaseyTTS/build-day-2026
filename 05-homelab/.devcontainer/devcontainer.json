@@ -1,0 +1,10 @@
+{
+  // Same image for Codespaces, VS Code Dev Containers, and the home-lab compose file.
+  "name": "build-anywhere-ts",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:22-bookworm",
+  "containerEnv": { "DEVCONTAINER": "true" },
+  "postCreateCommand": "npm ci && npm run check && npm run demo",
+  "customizations": {
+    "vscode": { "extensions": ["dbaeumer.vscode-eslint"] }
+  }
+}

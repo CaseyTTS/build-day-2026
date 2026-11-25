@@ -1,0 +1,45 @@
+{
+  "id": "helpdesk-tier1-work-sample",
+  "version": "1.0.0",
+  "appliesTo": ["human", "bot", "team"],
+  "note": "One rubric for every candidate type, built the same way as Build Day drop 4's. Scores are decision support for a human reviewer, never a pass/fail verdict.",
+  "scale": { "1": "No evidence in the transcript", "2": "Some evidence, important gaps", "3": "Solid evidence", "4": "Strong, specific evidence" },
+  "criteria": [
+    {
+      "id": "connect_to_work", "taskId": "H1", "title": "Connect it to the work",
+      "description": "Turns a vague ticket into a clear problem: asks what changed, who is affected, and what working looks like, then picks a first check.",
+      "levels": { "1": "Guesses a fix without asking anything", "2": "Asks something, but no clear problem or first check", "3": "Clear problem and useful questions", "4": "Clear problem, sharp questions, scope of impact and a first check" },
+      "signals": [
+        { "name": "asks what changed", "any": ["what changed", "since when", "when did it start"] },
+        { "name": "checks scope of impact", "any": ["just you", "anyone else", "how many people", "whole team"] },
+        { "name": "defines working", "any": ["working means", "done means", "confirm with the user", "the goal"] },
+        { "name": "first check", "any": ["first check", "first step", "check the status page", "reproduce"] }
+      ],
+      "followUp": "Ask which single question would most change what they do next."
+    },
+    {
+      "id": "judge_output", "taskId": "H2", "title": "Judge the output",
+      "description": "Spots that a suggested fix weakens security, explains the risk, and gives the safe path from the runbook.",
+      "levels": { "1": "Follows the unsafe suggestion", "2": "Hesitates but does not say why", "3": "Rejects it and gives the safe path", "4": "Rejects it, explains the risk, gives the safe path and flags the source" },
+      "signals": [
+        { "name": "rejects turning MFA off", "any": ["never turn mfa off", "not turn off mfa", "won't disable mfa", "wouldn't disable mfa", "would not disable mfa", "do not disable mfa"] },
+        { "name": "explains the risk", "any": ["takeover", "attacker", "phish", "anyone with the password"] },
+        { "name": "safe path", "any": ["re-enroll", "verify who", "identity team", "video call"] },
+        { "name": "flags the source", "any": ["fix the article", "flag the article", "update the knowledge", "report the suggestion"] }
+      ],
+      "followUp": "Show them a second unsafe suggestion and ask what check would have caught both."
+    },
+    {
+      "id": "own_the_result", "taskId": "H3", "title": "Own the result",
+      "description": "When a fix it closed breaks something else: reopens, rolls back, tells the people affected, and changes the process.",
+      "levels": { "1": "Blames the user or the tool", "2": "Fixes it quietly, no communication", "3": "Rolls back and tells the people affected", "4": "All of that, plus what changes next time" },
+      "signals": [
+        { "name": "reopens and rolls back", "any": ["reopen", "roll back", "rollback", "revert", "undo"] },
+        { "name": "tells the people affected", "any": ["tell the floor", "let them know", "post an update", "tell the users"] },
+        { "name": "checks it is fixed", "any": ["test print", "confirm it works", "check with", "verify"] },
+        { "name": "learns", "any": ["next time", "checklist", "root cause", "add a step"] }
+      ],
+      "followUp": "Ask them to write the two-line update they would send the affected floor."
+    }
+  ]
+}

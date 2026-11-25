@@ -1,0 +1,15 @@
+{
+  "name": "bad",
+  "title": "A deliberately broken playbook",
+  "description": "Used by the schema test. Every block has a mistake.",
+  "inbox": "inbox.jsonl",
+  "triage": {
+    "labels": { "content": ["post"], "other": [] },
+    "routes": { "content": "content-team", "ghost": "nowhere" },
+    "urgent_terms": [],
+    "always_human_labels": ["missing"]
+  },
+  "rag": { "docs": "no-such-folder", "default_groups": [], "mode": "summarize" },
+  "harness": { "policy": { "publish": "allow", "teleport": "allow", "save_draft": "sometimes" } },
+  "actions": { "content": [{ "tool": "send_reply" }], "ghost": [] }
+}

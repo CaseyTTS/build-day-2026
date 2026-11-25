@@ -1,0 +1,585 @@
+# PROOF: Build Day drop 6/6, Assemble it: five builds, one system
+# Generated: 2026-11-18 22:29 CST from a clean copy at <drop> (node_modules, dist and outputs deleted first)
+# MOCKED, plainly:
+#  - Model: the built-in stand-in for every run below (keyword triage, extractive RAG answer, canned interview answers
+#    from each playbook's tasks.json). No network, no key, no real AI model in this file.
+#  - Scripted people: the 'human' candidates and the human member of each team answer from fixed lines in inbox.jsonl.
+#  - Tools: every harness tool is a local stub that writes only inside outputs/. publish is a no-op stub; send_reply,
+#    grant_access and update_candidate_status record a line locally and touch nothing else. Nothing was sent or published.
+#  - --approve stands in for a person approving the whole run up front.
+#  - Container: no Docker on this machine, so .devcontainer/devcontainer.json and compose.yaml were NOT run.
+#  - The OpenAI-compatible and Ollama wire formats are tested in npm test only against a local fake HTTP server.
+#    A separate optional run against a real local model is in proof-real-model.txt.
+# Interviewer copied from drop-4-interview/code/src (sha256 prefixes in each file header):
+#   // Copied from Build Day drop 4 (drop-4-interview/code/src/candidates.ts, sha256 4163748a3243). Changes for the finale are marked FINALE.
+#   // Copied from Build Day drop 4 (drop-4-interview/code/src/consent.ts, sha256 84049c3d70c2). Changes for the finale are marked FINALE.
+#   // Copied from Build Day drop 4 (drop-4-interview/code/src/interview.ts, sha256 325b963c0bfc). Changes for the finale are marked FINALE.
+#   // Copied from Build Day drop 4 (drop-4-interview/code/src/report.ts, sha256 2842864b5034). Changes for the finale are marked FINALE.
+#   // Copied from Build Day drop 4 (drop-4-interview/code/src/rubric.ts, sha256 b9b476ca9722). Changes for the finale are marked FINALE.
+#   // Copied from Build Day drop 4 (drop-4-interview/code/src/score.ts, sha256 8f5ac727c062). Changes for the finale are marked FINALE.
+#   // Copied from Build Day drop 4 (drop-4-interview/code/src/types.ts, sha256 05fd10551083). Changes for the finale are marked FINALE.
+
+[2026-11-18 22:29:58 CST] $ node -v && npm -v
+v24.22.1
+11.21.1
+[2026-11-18 22:29:58 CST] exit=0
+
+[2026-11-18 22:29:58 CST] $ ls node_modules dist outputs 2>&1 | head -3   # should not exist
+ls: cannot access 'node_modules': No such file or directory
+ls: cannot access 'dist': No such file or directory
+ls: cannot access 'outputs': No such file or directory
+[2026-11-18 22:29:58 CST] exit=0
+
+[2026-11-18 22:29:58 CST] $ npm ci
+
+added 3 packages, and audited 4 packages in 381ms
+
+found 0 vulnerabilities
+[2026-11-18 22:29:58 CST] exit=0
+
+[2026-11-18 22:29:58 CST] $ npm test
+
+> build-day-assembled@1.0.0 test
+> npm run build && node --test "dist/test/**/*.test.js"
+
+
+> build-day-assembled@1.0.0 build
+> tsc -p tsconfig.json
+
+✔ triage port matches drop 1 (triage.py) on drop 1's own samples (2.521355ms)
+✔ RAG port matches drop 2 (rag.py): same hits, same scores, same answers, permission filter first (7.858098ms)
+✔ RAG: a doc the reader's groups cannot see never reaches ranking, and the answer is I don't know (3.749203ms)
+✔ harness: default deny, unknown and unlisted tools denied, ask needs a person, sandbox escape denied (2.264981ms)
+✔ schema: the three shipped playbooks pass (2.669913ms)
+✔ schema: a malformed playbook fails fast and lists every problem (1.032319ms)
+✔ schema: the CLI exits non-zero before doing any work on a malformed playbook (43.778335ms)
+✔ schema: publish can never be set to allow in any shipped playbook (1.787681ms)
+✔ end to end (helpdesk): denied run lets nothing past an 'ask', approved run lets asks through, deny stays deny (19.048488ms)
+✔ end to end (recruiting): denied run lets nothing past an 'ask', approved run lets asks through, deny stays deny (17.795135ms)
+✔ end to end (marketing): denied run lets nothing past an 'ask', approved run lets asks through, deny stays deny (7.476565ms)
+✔ recruiting: a person makes every decision; status changes are denied even in the approved run (5.880491ms)
+✔ recruiting: declined consent records nothing for that candidate (8.180984ms)
+✔ interview reports: banner, evidence quotes copied verbatim from the transcript, no verdict (17.785748ms)
+✔ marketing: publish is a stub; even approved, nothing leaves the outputs folder (4.113398ms)
+✔ model scorer: a short quote is rejected and the scorer label stays honest (5.520521ms)
+✔ env switch: standin by default, clear errors when a real provider is half-configured (0.179244ms)
+✔ real-model path: Ollama and OpenAI-compatible wire formats drive triage, against a local fake server (29.095516ms)
+✔ publishable files never use the banned word (5.141651ms)
+✔ triage: always_human_terms send an item to a person even when a model picks a harmless label (0.490219ms)
+✔ drop 4's seconds/milliseconds cap is opted into by the rubric (capUnlessUnitFlaw), never inherited by task id (5.28632ms)
+✔ security: an inbox id like ../../.. is rejected before anything is written (3.106179ms)
+✔ security: an attachment outside the playbook folder is rejected (3.028229ms)
+✔ security: save_draft cannot overwrite audit.jsonl; the audit log keeps its start line (2.41384ms)
+✔ schema: playbook paths outside the playbook folder are rejected (0.807626ms)
+✔ schema: a malformed inbox line exits 3 cleanly, with no stack trace (39.776891ms)
+✔ security: an item cannot overwrite another item's draft via save_draft (2.976984ms)
+✔ schema: a missing attachment exits 3 cleanly, with no stack trace (43.895607ms)
+✔ security: a symlink attachment that points outside the playbook folder is rejected (3.411057ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 385.162272
+[2026-11-18 22:30:00 CST] exit=0
+
+[2026-11-18 22:30:00 CST] $ npm run start -- --playbook helpdesk
+
+> build-day-assembled@1.0.0 start
+> npm run build --silent && node dist/src/cli.js --playbook helpdesk
+
+Playbook: helpdesk  (IT help desk)
+Model: stand-in (built-in, deterministic, no network)
+Approval gate: deny (default: every 'ask' is refused)
+Docs: docs (12 chunks)
+
+HD-101   network          1.00 P3 -> netops             auto
+         rag[everyone]: When the VPN will not connect Check that your laptop clock is correct first, because the certifi...
+         gate: save_draft               allow         draft saved to drafts/HD-101.md
+         gate: route_to_queue           allow         queued in queues/netops.jsonl
+         gate: send_reply               not-approved  playbook action for "network"
+HD-102   access           1.00 P3 -> identity-team      REVIEW: mentions 'password', which always gets a person
+         rag[everyone]: After an MFA reset If you are locked out after an MFA reset, the identity team re-enrolls your d...
+         gate: save_draft               allow         draft saved to drafts/HD-102.md
+         gate: grant_access             not-approved  access changes always need a person's approval
+         gate: route_to_queue           allow         queued in queues/identity-team.jsonl
+HD-103   access           1.00 P3 -> identity-team      REVIEW: mentions 'access', which always gets a person
+         rag[everyone]: Shared drives Edit access to a shared drive is granted by the identity team after the drive owne...
+         gate: save_draft               allow         draft saved to drafts/HD-103.md
+         gate: grant_access             not-approved  access changes always need a person's approval
+         gate: route_to_queue           allow         queued in queues/identity-team.jsonl
+HD-104   hardware         1.00 P3 -> desk-side          REVIEW: mentions 'delete', which always gets a person
+         rag[everyone]: Laptop overheating or shutting down A loud fan with shutdowns during calls usually means blocked...
+         gate: save_draft               allow         draft saved to drafts/HD-104.md
+         gate: route_to_queue           allow         queued in queues/desk-side.jsonl
+         gate: send_reply               not-approved  playbook action for "hardware"
+         gate: delete_record            deny          asked for inside the item (untrusted)
+         gate: run_shell                deny          asked for inside the item (untrusted)
+HD-105   access           1.00 P3 -> identity-team      REVIEW: mentions 'admin', which always gets a person
+         rag[everyone]: I don't know from the documents you can access.
+         gate: save_draft               allow         draft saved to drafts/HD-105.md
+         gate: grant_access             not-approved  access changes always need a person's approval
+         gate: route_to_queue           allow         queued in queues/identity-team.jsonl
+HD-106   bot_for_seat     1.00 P3 -> service-desk-lead  REVIEW: label 'bot_for_seat' always gets a person
+         rag[everyone]: I don't know from the documents you can access.
+         interview: connect_to_work=4, judge_output=3, own_the_result=3  (decision support only)
+         gate: share_scorecard          allow         report shared to review/HD-106.md
+         gate: route_to_queue           allow         queued in queues/service-desk-lead.jsonl
+
+6 items | gate: 12 allowed, 5 not approved, 2 denied, 0 errors | 11 decisions waiting on a person
+Wrote outputs/helpdesk/denied/summary.md, results.json, audit.jsonl
+Decision support only. A human makes the call. No auto-reject.
+[2026-11-18 22:30:01 CST] exit=0
+
+[2026-11-18 22:30:01 CST] $ npm run start -- --playbook helpdesk --approve
+
+> build-day-assembled@1.0.0 start
+> npm run build --silent && node dist/src/cli.js --playbook helpdesk --approve
+
+Playbook: helpdesk  (IT help desk)
+Model: stand-in (built-in, deterministic, no network)
+Approval gate: approved up front with --approve
+Docs: docs (12 chunks)
+
+HD-101   network          1.00 P3 -> netops             auto
+         rag[everyone]: When the VPN will not connect Check that your laptop clock is correct first, because the certifi...
+         gate: save_draft               allow         draft saved to drafts/HD-101.md
+         gate: route_to_queue           allow         queued in queues/netops.jsonl
+         gate: send_reply               allow         STUB, nothing sent. Recorded in outbox-stub.jsonl
+HD-102   access           1.00 P3 -> identity-team      REVIEW: mentions 'password', which always gets a person
+         rag[everyone]: After an MFA reset If you are locked out after an MFA reset, the identity team re-enrolls your d...
+         gate: save_draft               allow         draft saved to drafts/HD-102.md
+         gate: grant_access             allow         STUB, no directory touched. Recorded in access-changes-stub.jsonl
+         gate: route_to_queue           allow         queued in queues/identity-team.jsonl
+HD-103   access           1.00 P3 -> identity-team      REVIEW: mentions 'access', which always gets a person
+         rag[everyone]: Shared drives Edit access to a shared drive is granted by the identity team after the drive owne...
+         gate: save_draft               allow         draft saved to drafts/HD-103.md
+         gate: grant_access             allow         STUB, no directory touched. Recorded in access-changes-stub.jsonl
+         gate: route_to_queue           allow         queued in queues/identity-team.jsonl
+HD-104   hardware         1.00 P3 -> desk-side          REVIEW: mentions 'delete', which always gets a person
+         rag[everyone]: Laptop overheating or shutting down A loud fan with shutdowns during calls usually means blocked...
+         gate: save_draft               allow         draft saved to drafts/HD-104.md
+         gate: route_to_queue           allow         queued in queues/desk-side.jsonl
+         gate: send_reply               allow         STUB, nothing sent. Recorded in outbox-stub.jsonl
+         gate: delete_record            deny          asked for inside the item (untrusted)
+         gate: run_shell                deny          asked for inside the item (untrusted)
+HD-105   access           1.00 P3 -> identity-team      REVIEW: mentions 'admin', which always gets a person
+         rag[everyone]: I don't know from the documents you can access.
+         gate: save_draft               allow         draft saved to drafts/HD-105.md
+         gate: grant_access             allow         STUB, no directory touched. Recorded in access-changes-stub.jsonl
+         gate: route_to_queue           allow         queued in queues/identity-team.jsonl
+HD-106   bot_for_seat     1.00 P3 -> service-desk-lead  REVIEW: label 'bot_for_seat' always gets a person
+         rag[everyone]: I don't know from the documents you can access.
+         interview: connect_to_work=4, judge_output=3, own_the_result=3  (decision support only)
+         gate: share_scorecard          allow         report shared to review/HD-106.md
+         gate: route_to_queue           allow         queued in queues/service-desk-lead.jsonl
+
+6 items | gate: 17 allowed, 0 not approved, 2 denied, 0 errors | 6 decisions waiting on a person
+Wrote outputs/helpdesk/approved/summary.md, results.json, audit.jsonl
+Decision support only. A human makes the call. No auto-reject.
+[2026-11-18 22:30:02 CST] exit=0
+
+[2026-11-18 22:30:02 CST] $ npm run start -- --playbook recruiting
+
+> build-day-assembled@1.0.0 start
+> npm run build --silent && node dist/src/cli.js --playbook recruiting
+
+Playbook: recruiting  (Recruiting desk)
+Model: stand-in (built-in, deterministic, no network)
+Approval gate: deny (default: every 'ask' is refused)
+Docs: docs (9 chunks)
+
+R-201    cloud_engineer   1.00 P3 -> seat-cloud-engineer REVIEW: playbook is always human-reviewed
+         rag[everyone]: The platform team has one open seat for a cloud engineer who builds AWS infrastructure with Terr...
+         interview: connect_to_work=3, judge_output=3, tools_within_limits=4, own_the_result=3  (decision support only)
+         gate: save_draft               allow         draft saved to drafts/R-201.md
+         gate: share_scorecard          allow         report shared to review/R-201.md
+         gate: route_to_queue           allow         queued in queues/seat-cloud-engineer.jsonl
+R-202    data_engineer    1.00 P3 -> seat-data-engineer REVIEW: playbook is always human-reviewed
+         rag[everyone]: The analytics team has one open seat for a data engineer who builds batch pipelines in Spark and...
+         interview: consent declined, nothing recorded
+         gate: share_scorecard          skipped       no interview report to share
+         gate: save_draft               allow         draft saved to drafts/R-202.md
+         gate: route_to_queue           allow         queued in queues/seat-data-engineer.jsonl
+         gate: update_candidate_status  deny          asked for inside the item (untrusted)
+R-203    bot_for_seat     1.00 P3 -> hiring-manager-review REVIEW: playbook is always human-reviewed
+         rag[everyone]: The platform team has one open seat for a cloud engineer who builds AWS infrastructure with Terr...
+         interview: connect_to_work=3, judge_output=4, tools_within_limits=4, own_the_result=3  (decision support only)
+         gate: share_scorecard          allow         report shared to review/R-203.md
+         gate: route_to_queue           allow         queued in queues/hiring-manager-review.jsonl
+R-204    team_for_seat    0.67 P3 -> hiring-manager-review REVIEW: playbook is always human-reviewed
+         rag[everyone]: The platform team has one open seat for a cloud engineer who builds AWS infrastructure with Terr...
+         interview: connect_to_work=3, judge_output=3, tools_within_limits=3, own_the_result=4  (decision support only)
+         gate: share_scorecard          allow         report shared to review/R-204.md
+         gate: route_to_queue           allow         queued in queues/hiring-manager-review.jsonl
+R-205    candidate_question 1.00 P3 -> recruiting-coordinator REVIEW: playbook is always human-reviewed
+         rag[everyone]: Next step after you apply The next step is a work-sample interview: four short tasks about conne...
+         gate: save_draft               allow         draft saved to drafts/R-205.md
+         gate: send_reply               not-approved  a reply to a candidate goes out only after a person approves it
+         gate: route_to_queue           allow         queued in queues/recruiting-coordinator.jsonl
+R-206    candidate_question 1.00 P3 -> recruiting-coordinator REVIEW: playbook is always human-reviewed
+         rag[everyone]: I don't know from the documents you can access.
+         gate: save_draft               allow         draft saved to drafts/R-206.md
+         gate: send_reply               not-approved  a reply to a candidate goes out only after a person approves it
+         gate: route_to_queue           allow         queued in queues/recruiting-coordinator.jsonl
+
+6 items | gate: 13 allowed, 2 not approved, 1 denied, 0 errors | 12 decisions waiting on a person
+Wrote outputs/recruiting/denied/summary.md, results.json, audit.jsonl
+Decision support only. A human makes the call. No auto-reject.
+[2026-11-18 22:30:03 CST] exit=0
+
+[2026-11-18 22:30:03 CST] $ npm run start -- --playbook recruiting --approve
+
+> build-day-assembled@1.0.0 start
+> npm run build --silent && node dist/src/cli.js --playbook recruiting --approve
+
+Playbook: recruiting  (Recruiting desk)
+Model: stand-in (built-in, deterministic, no network)
+Approval gate: approved up front with --approve
+Docs: docs (9 chunks)
+
+R-201    cloud_engineer   1.00 P3 -> seat-cloud-engineer REVIEW: playbook is always human-reviewed
+         rag[everyone]: The platform team has one open seat for a cloud engineer who builds AWS infrastructure with Terr...
+         interview: connect_to_work=3, judge_output=3, tools_within_limits=4, own_the_result=3  (decision support only)
+         gate: save_draft               allow         draft saved to drafts/R-201.md
+         gate: share_scorecard          allow         report shared to review/R-201.md
+         gate: route_to_queue           allow         queued in queues/seat-cloud-engineer.jsonl
+R-202    data_engineer    1.00 P3 -> seat-data-engineer REVIEW: playbook is always human-reviewed
+         rag[everyone]: The analytics team has one open seat for a data engineer who builds batch pipelines in Spark and...
+         interview: consent declined, nothing recorded
+         gate: share_scorecard          skipped       no interview report to share
+         gate: save_draft               allow         draft saved to drafts/R-202.md
+         gate: route_to_queue           allow         queued in queues/seat-data-engineer.jsonl
+         gate: update_candidate_status  deny          asked for inside the item (untrusted)
+R-203    bot_for_seat     1.00 P3 -> hiring-manager-review REVIEW: playbook is always human-reviewed
+         rag[everyone]: The platform team has one open seat for a cloud engineer who builds AWS infrastructure with Terr...
+         interview: connect_to_work=3, judge_output=4, tools_within_limits=4, own_the_result=3  (decision support only)
+         gate: share_scorecard          allow         report shared to review/R-203.md
+         gate: route_to_queue           allow         queued in queues/hiring-manager-review.jsonl
+R-204    team_for_seat    0.67 P3 -> hiring-manager-review REVIEW: playbook is always human-reviewed
+         rag[everyone]: The platform team has one open seat for a cloud engineer who builds AWS infrastructure with Terr...
+         interview: connect_to_work=3, judge_output=3, tools_within_limits=3, own_the_result=4  (decision support only)
+         gate: share_scorecard          allow         report shared to review/R-204.md
+         gate: route_to_queue           allow         queued in queues/hiring-manager-review.jsonl
+R-205    candidate_question 1.00 P3 -> recruiting-coordinator REVIEW: playbook is always human-reviewed
+         rag[everyone]: Next step after you apply The next step is a work-sample interview: four short tasks about conne...
+         gate: save_draft               allow         draft saved to drafts/R-205.md
+         gate: send_reply               allow         STUB, nothing sent. Recorded in outbox-stub.jsonl
+         gate: route_to_queue           allow         queued in queues/recruiting-coordinator.jsonl
+R-206    candidate_question 1.00 P3 -> recruiting-coordinator REVIEW: playbook is always human-reviewed
+         rag[everyone]: I don't know from the documents you can access.
+         gate: save_draft               allow         draft saved to drafts/R-206.md
+         gate: send_reply               allow         STUB, nothing sent. Recorded in outbox-stub.jsonl
+         gate: route_to_queue           allow         queued in queues/recruiting-coordinator.jsonl
+
+6 items | gate: 15 allowed, 0 not approved, 1 denied, 0 errors | 10 decisions waiting on a person
+Wrote outputs/recruiting/approved/summary.md, results.json, audit.jsonl
+Decision support only. A human makes the call. No auto-reject.
+[2026-11-18 22:30:05 CST] exit=0
+
+[2026-11-18 22:30:05 CST] $ npm run start -- --playbook marketing
+
+> build-day-assembled@1.0.0 start
+> npm run build --silent && node dist/src/cli.js --playbook marketing
+
+Playbook: marketing  (Marketing content desk)
+Model: stand-in (built-in, deterministic, no network)
+Approval gate: deny (default: every 'ask' is refused)
+Docs: docs (9 chunks)
+
+M-301    blog_post        1.00 P3 -> content-team       auto
+         rag[everyone,marketing]: Offline mode Tallyleaf Notes works offline: notes are saved on the device and sync later when th...
+         gate: save_draft               allow         draft saved to drafts/M-301.md
+         gate: route_to_queue           allow         queued in queues/content-team.jsonl
+         gate: publish                  not-approved  nothing is published without a person's approval
+M-302    event_promo      1.00 P3 -> events-team        auto
+         rag[everyone,marketing]: The webinar runs on the second Thursday of April at 11 AM Central, and people register on the ev...
+         gate: save_draft               allow         draft saved to drafts/M-302.md
+         gate: route_to_queue           allow         queued in queues/events-team.jsonl
+         gate: publish                  not-approved  nothing is published without a person's approval
+M-303    social_post      1.00 P3 -> social-team        auto
+         rag[everyone,marketing]: I don't know from the documents you can access.
+         gate: save_draft               allow         draft saved to drafts/M-303.md
+         gate: route_to_queue           allow         queued in queues/social-team.jsonl
+         gate: publish                  not-approved  nothing is published without a person's approval
+M-304    correction       0.75 P1 -> editor-on-call     REVIEW: mentions 'republish', which always gets a person
+         rag[everyone,marketing]: Corrections go out as a visible correction under the original post, and the original is not dele...
+         gate: save_draft               allow         draft saved to drafts/M-304.md
+         gate: route_to_queue           allow         queued in queues/editor-on-call.jsonl
+         gate: publish                  not-approved  asked for inside the item (untrusted)
+         gate: delete_record            deny          asked for inside the item (untrusted)
+M-305    writer_for_seat  1.00 P3 -> content-lead       REVIEW: label 'writer_for_seat' always gets a person
+         rag[everyone,marketing]: I don't know from the documents you can access.
+         interview: connect_to_work=3, judge_output=3, own_the_result=3  (decision support only)
+         gate: share_scorecard          allow         report shared to review/M-305.md
+         gate: route_to_queue           allow         queued in queues/content-lead.jsonl
+
+5 items | gate: 10 allowed, 4 not approved, 1 denied, 0 errors | 7 decisions waiting on a person
+Wrote outputs/marketing/denied/summary.md, results.json, audit.jsonl
+Decision support only. A human makes the call. No auto-reject.
+[2026-11-18 22:30:06 CST] exit=0
+
+[2026-11-18 22:30:06 CST] $ npm run start -- --playbook marketing --approve
+
+> build-day-assembled@1.0.0 start
+> npm run build --silent && node dist/src/cli.js --playbook marketing --approve
+
+Playbook: marketing  (Marketing content desk)
+Model: stand-in (built-in, deterministic, no network)
+Approval gate: approved up front with --approve
+Docs: docs (9 chunks)
+
+M-301    blog_post        1.00 P3 -> content-team       auto
+         rag[everyone,marketing]: Offline mode Tallyleaf Notes works offline: notes are saved on the device and sync later when th...
+         gate: save_draft               allow         draft saved to drafts/M-301.md
+         gate: route_to_queue           allow         queued in queues/content-team.jsonl
+         gate: publish                  allow         STUB, nothing was published. Recorded in publish-stub.jsonl
+M-302    event_promo      1.00 P3 -> events-team        auto
+         rag[everyone,marketing]: The webinar runs on the second Thursday of April at 11 AM Central, and people register on the ev...
+         gate: save_draft               allow         draft saved to drafts/M-302.md
+         gate: route_to_queue           allow         queued in queues/events-team.jsonl
+         gate: publish                  allow         STUB, nothing was published. Recorded in publish-stub.jsonl
+M-303    social_post      1.00 P3 -> social-team        auto
+         rag[everyone,marketing]: I don't know from the documents you can access.
+         gate: save_draft               allow         draft saved to drafts/M-303.md
+         gate: route_to_queue           allow         queued in queues/social-team.jsonl
+         gate: publish                  allow         STUB, nothing was published. Recorded in publish-stub.jsonl
+M-304    correction       0.75 P1 -> editor-on-call     REVIEW: mentions 'republish', which always gets a person
+         rag[everyone,marketing]: Corrections go out as a visible correction under the original post, and the original is not dele...
+         gate: save_draft               allow         draft saved to drafts/M-304.md
+         gate: route_to_queue           allow         queued in queues/editor-on-call.jsonl
+         gate: publish                  allow         STUB, nothing was published. Recorded in publish-stub.jsonl
+         gate: delete_record            deny          asked for inside the item (untrusted)
+M-305    writer_for_seat  1.00 P3 -> content-lead       REVIEW: label 'writer_for_seat' always gets a person
+         rag[everyone,marketing]: I don't know from the documents you can access.
+         interview: connect_to_work=3, judge_output=3, own_the_result=3  (decision support only)
+         gate: share_scorecard          allow         report shared to review/M-305.md
+         gate: route_to_queue           allow         queued in queues/content-lead.jsonl
+
+5 items | gate: 14 allowed, 0 not approved, 1 denied, 0 errors | 3 decisions waiting on a person
+Wrote outputs/marketing/approved/summary.md, results.json, audit.jsonl
+Decision support only. A human makes the call. No auto-reject.
+[2026-11-18 22:30:07 CST] exit=0
+
+[2026-11-18 22:30:07 CST] $ npm run check:playbooks
+
+> build-day-assembled@1.0.0 check:playbooks
+> npm run build --silent && node dist/src/cli.js --check helpdesk && node dist/src/cli.js --check recruiting && node dist/src/cli.js --check marketing
+
+OK: playbook "helpdesk" passed the schema check.
+OK: playbook "recruiting" passed the schema check.
+OK: playbook "marketing" passed the schema check.
+[2026-11-18 22:30:08 CST] exit=0
+
+[2026-11-18 22:30:08 CST] $ node dist/src/cli.js --playbook test/fixtures/bad-playbook; echo "exit code: $?"
+Playbook <drop>/test/fixtures/bad-playbook/playbook.json is malformed:
+  - inbox file "inbox.jsonl" not found
+  - triage label "other" needs a non-empty list of keywords
+  - triage label "other" has no route
+  - route "ghost" is not a triage label
+  - always_human_labels has unknown label "missing"
+  - rag docs folder "no-such-folder" not found
+  - "rag.default_groups" must be a non-empty list
+  - "rag.mode" must be "answer" or "draft"
+  - tool "publish" is external; it can be "ask" or "deny", never "allow"
+  - harness.policy names unknown tool "teleport"
+  - harness.policy "save_draft" must be allow, ask or deny
+  - actions "content" proposes "send_reply", which harness.policy does not mention (it would always be denied; list it as "deny" if that is the point)
+  - actions has unknown triage label "ghost"
+exit code: 3
+[2026-11-18 22:30:08 CST] exit=0
+
+[2026-11-18 22:30:08 CST] $ cat outputs/marketing/approved/publish-stub.jsonl; echo; cat outputs/helpdesk/approved/access-changes-stub.jsonl
+{"id":"M-301","channel":"blog","would_publish":"drafts/M-301.md"}
+{"id":"M-302","channel":"events page","would_publish":"drafts/M-302.md"}
+{"id":"M-303","channel":"social","would_publish":"drafts/M-303.md"}
+{"id":"M-304","channel":"social","would_publish":"drafts/M-304.md"}
+
+{"id":"HD-102","change":"Locked out after the MFA reset, I need my password reset so I can log in"}
+{"id":"HD-103","change":"Please give me edit access to the shared finance drive for month-end close"}
+{"id":"HD-105","change":"Where is the break-glass admin login procedure for the domain?"}
+[2026-11-18 22:30:08 CST] exit=0
+
+[2026-11-18 22:30:08 CST] $ find outputs -type f | sort
+outputs/helpdesk/approved/access-changes-stub.jsonl
+outputs/helpdesk/approved/audit.jsonl
+outputs/helpdesk/approved/drafts/HD-101.md
+outputs/helpdesk/approved/drafts/HD-102.md
+outputs/helpdesk/approved/drafts/HD-103.md
+outputs/helpdesk/approved/drafts/HD-104.md
+outputs/helpdesk/approved/drafts/HD-105.md
+outputs/helpdesk/approved/interviews/HD-106-report.md
+outputs/helpdesk/approved/interviews/HD-106-scorecard.json
+outputs/helpdesk/approved/interviews/HD-106-transcript.json
+outputs/helpdesk/approved/outbox-stub.jsonl
+outputs/helpdesk/approved/queues/desk-side.jsonl
+outputs/helpdesk/approved/queues/identity-team.jsonl
+outputs/helpdesk/approved/queues/netops.jsonl
+outputs/helpdesk/approved/queues/service-desk-lead.jsonl
+outputs/helpdesk/approved/results.json
+outputs/helpdesk/approved/review/HD-106.md
+outputs/helpdesk/approved/summary.md
+outputs/helpdesk/denied/audit.jsonl
+outputs/helpdesk/denied/drafts/HD-101.md
+outputs/helpdesk/denied/drafts/HD-102.md
+outputs/helpdesk/denied/drafts/HD-103.md
+outputs/helpdesk/denied/drafts/HD-104.md
+outputs/helpdesk/denied/drafts/HD-105.md
+outputs/helpdesk/denied/interviews/HD-106-report.md
+outputs/helpdesk/denied/interviews/HD-106-scorecard.json
+outputs/helpdesk/denied/interviews/HD-106-transcript.json
+outputs/helpdesk/denied/queues/desk-side.jsonl
+outputs/helpdesk/denied/queues/identity-team.jsonl
+outputs/helpdesk/denied/queues/netops.jsonl
+outputs/helpdesk/denied/queues/service-desk-lead.jsonl
+outputs/helpdesk/denied/results.json
+outputs/helpdesk/denied/review/HD-106.md
+outputs/helpdesk/denied/summary.md
+outputs/marketing/approved/audit.jsonl
+outputs/marketing/approved/drafts/M-301.md
+outputs/marketing/approved/drafts/M-302.md
+outputs/marketing/approved/drafts/M-303.md
+outputs/marketing/approved/drafts/M-304.md
+outputs/marketing/approved/interviews/M-305-report.md
+outputs/marketing/approved/interviews/M-305-scorecard.json
+outputs/marketing/approved/interviews/M-305-transcript.json
+outputs/marketing/approved/publish-stub.jsonl
+outputs/marketing/approved/queues/content-lead.jsonl
+outputs/marketing/approved/queues/content-team.jsonl
+outputs/marketing/approved/queues/editor-on-call.jsonl
+outputs/marketing/approved/queues/events-team.jsonl
+outputs/marketing/approved/queues/social-team.jsonl
+outputs/marketing/approved/results.json
+outputs/marketing/approved/review/M-305.md
+outputs/marketing/approved/summary.md
+outputs/marketing/denied/audit.jsonl
+outputs/marketing/denied/drafts/M-301.md
+outputs/marketing/denied/drafts/M-302.md
+outputs/marketing/denied/drafts/M-303.md
+outputs/marketing/denied/drafts/M-304.md
+outputs/marketing/denied/interviews/M-305-report.md
+outputs/marketing/denied/interviews/M-305-scorecard.json
+outputs/marketing/denied/interviews/M-305-transcript.json
+outputs/marketing/denied/queues/content-lead.jsonl
+outputs/marketing/denied/queues/content-team.jsonl
+outputs/marketing/denied/queues/editor-on-call.jsonl
+outputs/marketing/denied/queues/events-team.jsonl
+outputs/marketing/denied/queues/social-team.jsonl
+outputs/marketing/denied/results.json
+outputs/marketing/denied/review/M-305.md
+outputs/marketing/denied/summary.md
+outputs/recruiting/approved/audit.jsonl
+outputs/recruiting/approved/drafts/R-201.md
+outputs/recruiting/approved/drafts/R-202.md
+outputs/recruiting/approved/drafts/R-205.md
+outputs/recruiting/approved/drafts/R-206.md
+outputs/recruiting/approved/interviews/R-201-report.md
+outputs/recruiting/approved/interviews/R-201-scorecard.json
+outputs/recruiting/approved/interviews/R-201-transcript.json
+outputs/recruiting/approved/interviews/R-203-report.md
+outputs/recruiting/approved/interviews/R-203-scorecard.json
+outputs/recruiting/approved/interviews/R-203-transcript.json
+outputs/recruiting/approved/interviews/R-204-report.md
+outputs/recruiting/approved/interviews/R-204-scorecard.json
+outputs/recruiting/approved/interviews/R-204-transcript.json
+outputs/recruiting/approved/outbox-stub.jsonl
+outputs/recruiting/approved/queues/hiring-manager-review.jsonl
+outputs/recruiting/approved/queues/recruiting-coordinator.jsonl
+outputs/recruiting/approved/queues/seat-cloud-engineer.jsonl
+outputs/recruiting/approved/queues/seat-data-engineer.jsonl
+outputs/recruiting/approved/results.json
+outputs/recruiting/approved/review/R-201.md
+outputs/recruiting/approved/review/R-203.md
+outputs/recruiting/approved/review/R-204.md
+outputs/recruiting/approved/summary.md
+outputs/recruiting/denied/audit.jsonl
+outputs/recruiting/denied/drafts/R-201.md
+outputs/recruiting/denied/drafts/R-202.md
+outputs/recruiting/denied/drafts/R-205.md
+outputs/recruiting/denied/drafts/R-206.md
+outputs/recruiting/denied/interviews/R-201-report.md
+outputs/recruiting/denied/interviews/R-201-scorecard.json
+outputs/recruiting/denied/interviews/R-201-transcript.json
+outputs/recruiting/denied/interviews/R-203-report.md
+outputs/recruiting/denied/interviews/R-203-scorecard.json
+outputs/recruiting/denied/interviews/R-203-transcript.json
+outputs/recruiting/denied/interviews/R-204-report.md
+outputs/recruiting/denied/interviews/R-204-scorecard.json
+outputs/recruiting/denied/interviews/R-204-transcript.json
+outputs/recruiting/denied/queues/hiring-manager-review.jsonl
+outputs/recruiting/denied/queues/recruiting-coordinator.jsonl
+outputs/recruiting/denied/queues/seat-cloud-engineer.jsonl
+outputs/recruiting/denied/queues/seat-data-engineer.jsonl
+outputs/recruiting/denied/results.json
+outputs/recruiting/denied/review/R-201.md
+outputs/recruiting/denied/review/R-203.md
+outputs/recruiting/denied/review/R-204.md
+outputs/recruiting/denied/summary.md
+[2026-11-18 22:30:08 CST] exit=0
+
+[2026-11-18 22:30:08 CST] $ head -40 outputs/recruiting/denied/interviews/R-204-report.md
+> Seat: Builder seat on the platform team. The same four work-sample tasks and one rubric for a person, a bot or a team (copied from Build Day drop 4).
+
+> **Decision support only. A human makes the call. No auto-reject.**
+
+# Work-sample interview: pod-1 (team)
+
+- Candidate type: **team** (members: engineer-1 [human], assistant-bot [bot])
+- Rubric: `builder-work-sample` v1.0.0. The same tasks, criteria and 1-4 scale for every candidate type (person, bot or team).
+- Consent: notice shown before anything was recorded; acknowledged by engineer-1 (typed yes after the notice); assistant-bot (operator) (operator started the run; notice was shown in the bot's context).
+- Scorer: rubric signal matcher (deterministic, no model)
+- Run: 2026-11-19T04:30:03.729Z to 2026-11-19T04:30:03.729Z
+
+## Scores and evidence
+
+| Criterion | Score | What that level means | Evidence (quote from the transcript) |
+|---|---|---|---|
+| Connect it to the work (T1) | 3/4 | Clear goal and useful questions | "Adding to that: one more question is whether the export can stream rows instead of building the whole file in memory, because that changes the design." (assistant-bot, turn 2) |
+| Judge the output (T2) | 3/4 | Finds the flaw and the fix | "The cutoff math is the problem: DAY is in seconds and Date.now() is in milliseconds." (assistant-bot, turn 4) |
+| Work within limits (T3) | 3/4 | Stays in scope and makes progress with allowed tools | "I'd read the logs for that account's export requests first and ask the on-call engineer for the query timings, so we can see where the time goes." (engineer-1, turn 5) |
+| Own the result (T4) | 4/4 | All of that, plus what it missed and what it changes next time | "Roll back the change right away and tell support what is happening so they can answer customers." (engineer-1, turn 7) |
+
+Signals found per criterion (what the matcher looked for, so you can disagree with it):
+- Connect it to the work: defines done, asks clarifying questions, names a constraint or risk
+- Judge the output: finds the unit mismatch, adds a guard
+- Work within limits: uses allowed access, asks the right owner, explains why
+- Own the result: rolls back, monitors, tells stakeholders, learns
+
+## Open questions for the human reviewer
+
+- Connect it to the work (3/4): Ask them to name the one question whose answer would most change their approach, and why.
+- Judge the output (3/4): Show them a second flawed output and ask what check would have caught both.
+- Work within limits (3/4): Ask what they would do if the owner did not answer for a day.
+- Read every evidence quote against the full transcript. Does the quote really support the score?
+- Use the turn log: who moved the work forward on each task, and who only agreed?
+
+## Recommended follow-up
+
+Start the follow-up conversation with "Connect it to the work" (3/4): Ask them to name the one question whose answer would most change their approach, and why.
+
+## Turn log (who said what, in order)
+[2026-11-18 22:30:08 CST] exit=0
+
+[2026-11-18 22:30:08 CST] $ head -n 4 outputs/helpdesk/denied/audit.jsonl
+{"ts":"2026-11-19T04:30:01.198Z","node":"start","playbook":"helpdesk","model":"stand-in (built-in, deterministic, no network)","approve":"deny","docs":5,"chunks":12}
+{"ts":"2026-11-19T04:30:01.199Z","node":"item","item":"HD-101","from":"user-a"}
+{"ts":"2026-11-19T04:30:01.199Z","node":"triage","item":"HD-101","label":"network","confidence":1,"priority":"P3","route":"netops","review":null}
+{"ts":"2026-11-19T04:30:01.200Z","node":"rag","item":"HD-101","groups":["everyone"],"grounded":true,"sources":["[1] vpn-runbook.md","[2] vpn-runbook.md","[3] vpn-runbook.md"]}
+[2026-11-18 22:30:08 CST] exit=0
+
+# SECTION 2: the same compiled tests on Node 22 (engines >=22)
+[2026-11-18 22:30:08 CST] $ <node22>/bin/node -v && <node22>/bin/node --test 'dist/test/**/*.test.js' 2>&1 | tail -9
+v22.23.5
+1..29
+# tests 29
+# suites 0
+# pass 29
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 369.008836
+[2026-11-18 22:30:09 CST] exit=0
+

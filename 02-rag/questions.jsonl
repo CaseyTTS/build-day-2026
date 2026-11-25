@@ -1,0 +1,5 @@
+{"q": "My VPN won't connect, what should I check first?", "groups": ["everyone"], "expect_source": "vpn.md"}
+{"q": "Who do I page for a SEV1?", "groups": ["everyone", "engineering"], "expect_source": "oncall.md"}
+{"q": "Where do software purchases go?", "groups": ["everyone"], "expect_source": "expenses.md"}
+{"q": "When are accruals posted?", "groups": ["everyone"], "expect_source": null}
+{"q": "When are accruals posted?", "groups": ["everyone", "finance"], "expect_source": "finance-close.md"}

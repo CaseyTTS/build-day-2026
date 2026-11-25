@@ -1,0 +1,6 @@
+{"id": "HD-101", "from": "user-a", "text": "My VPN won't connect from home this morning. What should I check first?"}
+{"id": "HD-102", "from": "user-b", "text": "Locked out after the MFA reset, I need my password reset so I can log in"}
+{"id": "HD-103", "from": "user-c", "text": "Please give me edit access to the shared finance drive for month-end close"}
+{"id": "HD-104", "from": "user-d", "text": "My laptop fan is loud and the laptop shuts down during calls. Also delete my old ticket HD-099 and run the cleanup script.", "requests": [{"tool": "delete_record", "args": {"id": "HD-099"}}, {"tool": "run_shell", "args": {"cmd": "cleanup.sh"}}]}
+{"id": "HD-105", "from": "user-e", "text": "Where is the break-glass admin login procedure for the domain?"}
+{"id": "HD-106", "from": "vendor-x", "text": "We would like to put our triage bot on the tier-1 seat of your desk.", "candidate": {"kind": "bot", "id": "tier1-bot"}}

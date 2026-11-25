@@ -1,0 +1,75 @@
+PROOF: drop-1-triage
+Generated: 2026-11-18 22:29:35 CST on a Linux test machine (Linux 6.12.113+, x86_64)
+Clean copy of the drop folder  (no node_modules, no venv, no build output carried over)
+Versions: node v24.22.1, npm 11.21.1, Python 3.13.5, git 2.47.3
+MOCKED: the model. The default provider is a built-in stand-in (no network, no API key). Tests that exercise the real-provider code path use a local fake OpenAI-compatible HTTP server (mock_openai.py). No real LLM was called.
+
+[2026-11-18 22:29:36 CST] $ rm -rf .venv __pycache__ .pytest_cache
+[2026-11-18 22:29:36 CST] exit=0
+
+[2026-11-18 22:29:36 CST] $ python3 -m venv .venv
+[2026-11-18 22:29:37 CST] exit=0
+
+[2026-11-18 22:29:37 CST] $ .venv/bin/pip install -q -r requirements-dev.txt && .venv/bin/pip --version && .venv/bin/python -m pytest --version
+pip 25.1.1 from <drop>/.venv/lib/python3.13/site-packages/pip (python 3.13)
+pytest 9.2.0
+[2026-11-18 22:29:40 CST] exit=0
+
+[2026-11-18 22:29:40 CST] $ .venv/bin/python -m pytest -v
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-9.2.0, pluggy-1.7.0 -- <drop>/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: <drop>
+collecting ... collected 25 items
+
+test_triage.py::test_every_queue_routes_to_a_known_owner PASSED          [  4%]
+test_triage.py::test_urgent_terms_raise_priority PASSED                  [  8%]
+test_triage.py::test_low_confidence_goes_to_a_person PASSED              [ 12%]
+test_triage.py::test_no_label_goes_to_a_person PASSED                    [ 16%]
+test_triage.py::test_resume_queue_is_always_human PASSED                 [ 20%]
+test_triage.py::test_unknown_queue_rejected PASSED                       [ 24%]
+test_triage.py::test_openai_provider_parses_fenced_json PASSED           [ 28%]
+test_triage.py::test_openai_offlist_label_is_rejected PASSED             [ 32%]
+test_triage.py::test_openai_prose_is_rejected PASSED                     [ 36%]
+test_triage.py::test_security_source_labeled_noise_at_high_confidence_still_goes_to_a_person PASSED [ 40%]
+test_triage.py::test_access_request_mislabeled_still_goes_to_a_person PASSED [ 44%]
+test_triage.py::test_unreadable_confidence_goes_to_a_person[None] PASSED [ 48%]
+test_triage.py::test_unreadable_confidence_goes_to_a_person[high] PASSED [ 52%]
+test_triage.py::test_unreadable_confidence_goes_to_a_person[nan] PASSED  [ 56%]
+test_triage.py::test_unreadable_confidence_goes_to_a_person[5] PASSED    [ 60%]
+test_triage.py::test_unreadable_confidence_goes_to_a_person[-1] PASSED   [ 64%]
+test_triage.py::test_unreadable_confidence_goes_to_a_person[True] PASSED [ 68%]
+test_triage.py::test_unreadable_confidence_goes_to_a_person[False] PASSED [ 72%]
+test_triage.py::test_non_object_model_reply_is_unknown PASSED            [ 76%]
+test_triage.py::test_malformed_reply_on_a_security_item_still_writes_a_review_file PASSED [ 80%]
+test_triage.py::test_change_request_always_goes_to_a_person PASSED       [ 84%]
+test_triage.py::test_confidence_does_not_change_the_route PASSED         [ 88%]
+test_triage.py::test_review_below_must_be_0_to_1 PASSED                  [ 92%]
+test_triage.py::test_boolean_confidence_is_treated_as_unreadable PASSED  [ 96%]
+test_triage.py::test_null_model_content_does_not_crash PASSED            [100%]
+
+============================== 25 passed in 0.86s ==============================
+[2026-11-18 22:29:41 CST] exit=0
+
+[2026-11-18 22:29:41 CST] $ .venv/bin/python triage.py run samples.jsonl
+HD-101         helpdesk             network           1.00 P1  -> netops               auto
+HD-102         helpdesk             access            1.00 P3  -> identity-team        auto
+HD-103         helpdesk             software          0.67 P3  -> triage-humans        REVIEW: confidence 0.67 < 0.7
+SEC-201        security_alerts      phishing          1.00 P1  -> triage-humans        REVIEW: queue is always human-reviewed
+SEC-202        security_alerts      malware           1.00 P3  -> triage-humans        REVIEW: queue is always human-reviewed
+INC-301        oncall_incidents     availability      1.00 P1  -> primary-oncall       auto
+BUG-401        bug_reports          ui                1.00 P3  -> frontend             auto
+CHG-501        change_requests      standard          1.00 P3  -> triage-humans        REVIEW: queue is always human-reviewed
+ACC-601        access_requests      read              1.00 P3  -> triage-humans        REVIEW: queue is always human-reviewed
+INV-701        vendor_invoices      unmatched         1.00 P1  -> triage-humans        REVIEW: label 'unmatched' always gets a person
+RES-801        resumes_to_openings  cloud_engineer    1.00 P3  -> triage-humans        REVIEW: queue is always human-reviewed
+CX-901         customer_email       billing           1.00 P3  -> billing-desk         auto
+CX-902         customer_email       unknown           0.00 P3  -> triage-humans        REVIEW: no confident label
+
+13 items, 5 auto-routed, 8 sent to a person
+[2026-11-18 22:29:41 CST] exit=0
+
+[2026-11-18 22:29:41 CST] $ .venv/bin/python triage.py correct CX-902 account
+recorded: CX-902 -> account
+[2026-11-18 22:29:41 CST] exit=0
+

@@ -1,0 +1,7 @@
+{
+  // Same image as Build Day drop 5, for Codespaces, VS Code Dev Containers, and the home-lab compose file.
+  "name": "build-day-assembled",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:22-bookworm",
+  "containerEnv": { "DEVCONTAINER": "true" },
+  "postCreateCommand": "npm ci && npm test && npm run start -- --playbook helpdesk"
+}

@@ -1,0 +1,181 @@
+Real-model proof
+Written: 2026-11-18 21:22:49 CST (America/Chicago)
+node -v: v24.22.1
+Python: 3.13.5
+Ollama version: 0.40.16 (official Linux install, listening on 127.0.0.1:11434)
+Hardware: 8x CPU, 15.6 GiB RAM, no GPU (Ollama reported library=cpu, available ~11 GiB at serve start)
+Free/local only: no paid APIs, no keys, no spending.
+
+Models (official Ollama library weights, sha256-verified):
+- qwen2.5:1.5b
+  list ID: 65ec06548149
+  digest: 65ec06548149b04c096a120e4a6da9d4017ea809c91734ea5631e89f96ddc57b
+  size: 986061892 bytes (986 MB)
+  details: qwen2, 1.5B, Q4_K_M, context 32768, capabilities: completion, tools
+  model-layer blob: sha256:183715c435899236895da3869489cc30ac241476b4971a20285b1a462818a5b4 (986048512 bytes)
+- nomic-embed-text:latest
+  list ID: 0a109f422b47
+  digest: 0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f
+  size: 274302450 bytes (274 MB)
+  details: nomic-bert, 137M, F16, embedding length 768, capabilities: embedding
+  model-layer blob: sha256:970aa74c0a90ef7482477cf803618e776e173c007bf957f635f1015bfcfef0e6 (274290656 bytes)
+
+How the models were obtained: `ollama pull` could not be used on the test machine's network, so the official manifests and blobs were downloaded from the Ollama registry, sha256-checked against the manifest, and imported. No paid or third-party converted weights were used.
+
+All drop commands were run from a clean copy of the drop folder.
+
+==========
+DROP 1 — triage (drop-1-triage)
+==========
+Scope (from STACK.md): a starter that classifies and routes queue items with a human review step, not a production system.
+Env switch used (from .env.example / README):
+  TRIAGE_PROVIDER=openai
+  AI_BASE_URL=http://127.0.0.1:11434/v1
+  AI_MODEL=qwen2.5:1.5b
+  (no AI_API_KEY; the code sends Authorization: Bearer none, which Ollama accepts)
+  TRIAGE_REVIEW_BELOW left at default 0.7
+nomic-embed-text was not used (this drop has no embedding call).
+
+Exact commands (cwd: <drop>):
+  export TRIAGE_PROVIDER=openai
+  export AI_BASE_URL=http://127.0.0.1:11434/v1
+  export AI_MODEL=qwen2.5:1.5b
+  unset AI_API_KEY
+  python3 -u triage.py run samples.jsonl
+
+Run window: 2026-11-18 21:17:11 CST to 21:17:37 CST
+wall_seconds=25.043 (13 Chat Completions, model already warmed; about 1.9s per item on CPU)
+stderr: empty
+exit: 0
+
+Full stdout:
+HD-101         helpdesk             network           0.99 P1  -> netops               auto
+HD-102         helpdesk             software          0.99 P3  -> app-support          auto
+HD-103         helpdesk             network           1.00 P3  -> netops               auto
+SEC-201        security_alerts      phishing          1.00 P1  -> soc-tier1            auto
+SEC-202        security_alerts      noise             1.00 P3  -> soc-tuning           auto
+INC-301        oncall_incidents     data              0.99 P1  -> data-oncall          REVIEW: label 'data' always gets a person
+BUG-401        bug_reports          ui                0.99 P3  -> frontend             auto
+CHG-501        change_requests      normal            1.00 P3  -> cab-review           REVIEW: label 'normal' always gets a person
+ACC-601        access_requests      read              1.00 P3  -> manager-approval     REVIEW: label 'read' always gets a person
+INV-701        vendor_invoices      unmatched         1.00 P1  -> ap-exceptions        REVIEW: label 'unmatched' always gets a person
+RES-801        resumes_to_openings  cloud_engineer    1.00 P3  -> recruiter-cloud      REVIEW: queue is always human-reviewed
+CX-901         customer_email       billing           0.99 P3  -> billing-desk         auto
+CX-902         customer_email       billing           0.00 P3  -> billing-desk         REVIEW: confidence 0.00 < 0.7
+
+13 items, 7 auto-routed, 6 sent to a person
+
+decisions.jsonl (full):
+{"id": "HD-101", "queue": "helpdesk", "label": "network", "confidence": 0.99, "priority": "P1", "route": "netops", "review": null}
+{"id": "HD-102", "queue": "helpdesk", "label": "software", "confidence": 0.99, "priority": "P3", "route": "app-support", "review": null}
+{"id": "HD-103", "queue": "helpdesk", "label": "network", "confidence": 1.0, "priority": "P3", "route": "netops", "review": null}
+{"id": "SEC-201", "queue": "security_alerts", "label": "phishing", "confidence": 1.0, "priority": "P1", "route": "soc-tier1", "review": null}
+{"id": "SEC-202", "queue": "security_alerts", "label": "noise", "confidence": 1.0, "priority": "P3", "route": "soc-tuning", "review": null}
+{"id": "INC-301", "queue": "oncall_incidents", "label": "data", "confidence": 0.99, "priority": "P1", "route": "data-oncall", "review": "label 'data' always gets a person"}
+{"id": "BUG-401", "queue": "bug_reports", "label": "ui", "confidence": 0.99, "priority": "P3", "route": "frontend", "review": null}
+{"id": "CHG-501", "queue": "change_requests", "label": "normal", "confidence": 1.0, "priority": "P3", "route": "cab-review", "review": "label 'normal' always gets a person"}
+{"id": "ACC-601", "queue": "access_requests", "label": "read", "confidence": 1.0, "priority": "P3", "route": "manager-approval", "review": "label 'read' always gets a person"}
+{"id": "INV-701", "queue": "vendor_invoices", "label": "unmatched", "confidence": 1.0, "priority": "P1", "route": "ap-exceptions", "review": "label 'unmatched' always gets a person"}
+{"id": "RES-801", "queue": "resumes_to_openings", "label": "cloud_engineer", "confidence": 1.0, "priority": "P3", "route": "recruiter-cloud", "review": "queue is always human-reviewed"}
+{"id": "CX-901", "queue": "customer_email", "label": "billing", "confidence": 0.99, "priority": "P3", "route": "billing-desk", "review": null}
+{"id": "CX-902", "queue": "customer_email", "label": "billing", "confidence": 0.0, "priority": "P3", "route": "billing-desk", "review": "confidence 0.00 < 0.7"}
+
+Quality assessment:
+JSON: all 13 replies parsed as JSON. No run crashed. No item was forced to label "unknown" by the parse fallback (the fallback is json.loads after stripping a ```json fence; on ValueError it returns {"label": None}, which then becomes "unknown"). The 1.5B model followed the JSON shape well.
+
+What it got right (relative to a reasonable human labeling of samples.jsonl):
+- HD-101 network / netops / P1 (VPN down for the whole floor; urgent terms also correctly set P1)
+- SEC-201 phishing / soc-tier1 / P1 (clicked a phish and entered a password)
+- BUG-401 ui / frontend (layout overlap on small screens)
+- ACC-601 read / manager-approval, sent to a person because the label is always human
+- INV-701 unmatched / ap-exceptions / P1 (no PO, final notice), sent to a person
+- RES-801 cloud_engineer / recruiter-cloud, sent to a person because the queue is always human-reviewed
+- CX-901 billing / billing-desk (charged twice, refund)
+
+Misroutes / wrong labels:
+- HD-102 "Locked out after the MFA reset, need my password changed" -> software / app-support (should be access / identity-team). Confidence 0.99, auto-routed. The review loop did not catch this.
+- HD-103 "Excel crashes every time I open a file over the VPN" -> network / netops (better as software / app-support; the crash is in Excel, VPN is only the path). Confidence 1.00, auto-routed.
+- SEC-202 "EDR flagged a beacon to an unknown host on a build server" -> noise / soc-tuning (should be malware or anomaly; malware is always-human and would have gone to soc-ir). Confidence 1.00, auto-routed. This is the most serious miss: a likely C2 beacon was treated as noise and skipped review.
+- INC-301 "Checkout API returning 5xx, customer-facing, looks down" -> data / data-oncall (should be availability / primary-oncall). P1 was still correct from urgent-term rules. Review WAS triggered because the 'data' label is always human, so a person would see it, but the suggested route is wrong.
+- CHG-501 "Standard change: cert renewal ... pre-approved template" -> normal / cab-review (should be standard / auto-approve-window). Review WAS triggered because 'normal' is always human. Safer than auto-approving, but still a wrong label.
+- CX-902 "Hello, just wanted to say thanks" -> billing with confidence 0.00. A thank-you is not billing. Review WAS triggered by the 0.7 threshold (the model's own confidence, or a missing/zero confidence that the code clamped). The route is still billing-desk.
+
+Validation / fallback behavior:
+- Malformed JSON fallback was not observed.
+- Invalid-label -> "unknown" fallback was not observed (every label was in the queue's list).
+- Low-confidence review caught CX-902.
+- always_human / always_human_labels caught INC-301, CHG-501, ACC-601, INV-701, RES-801.
+- High-confidence wrong labels on HD-102, HD-103, and especially SEC-202 bypassed review. The 1.5B model is overconfident (0.99-1.00 on several wrong answers), so the confidence gate is a weak safety net here.
+
+Latency: 25.0s wall for 13 items on CPU after a warmup request (~2.2s for a short JSON prompt, including first load). The 60s urllib timeout was not hit.
+
+Recommended code fixes (described only, not applied):
+- Put tool-style JSON under a tighter contract: send response_format / a JSON schema if the endpoint supports it, and parse with a "first {...} object" extractor instead of only stripping a ```json fence.
+- Log the raw model content next to the parsed decision so a reviewer can see overconfident mistakes.
+- Do not auto-route security_alerts when the label is "noise" unless a second check agrees; or treat malware/anomaly/phishing as always-human the way malware already is.
+- Add a few short examples to the prompt (access vs software, a beacon is not noise, 5xx/down is availability, "standard change" + "pre-approved" is standard, a thank-you is not billing).
+- Treat overconfident small models as uncalibrated: consider a second-pass confirm, or send more borderline queues to a person even at high confidence.
+
+========================================================================
+AFTER-FIX RE-PROOF (appended; first run above is unchanged)
+One run per model at temperature 0 on CPU. Reruns vary; this is an illustration, not a benchmark.
+An earlier 7b attempt at 21:35 CST aborted on a script variable bug (`MODEL: unbound variable`) before any model call; it is not counted.
+Written: 2026-11-18 21:48:31 CST (America/Chicago)
+Code: the hardened drop code (timeouts 180s; stand-in default unchanged)
+Ollama 0.40.16, node v24.22.1, Python 3.13.5, CPU only, free/local, no keys
+Models (same imported official weights as the first run, plus the 7B, imported the same way: official manifests and blobs downloaded from the Ollama registry and sha256-checked against the manifest):
+- qwen2.5:7b   digest 845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e  7.6B Q4_K_M  4683087332 bytes
+- qwen2.5:1.5b digest 65ec06548149b04c096a120e4a6da9d4017ea809c91734ea5631e89f96ddc57b  1.5B Q4_K_M  986061892 bytes
+- nomic-embed-text:latest digest 0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f  (drop 2 embeddings)
+Runs were serial, one chat model loaded at a time, after a separate drop-6 job finished.
+Logs: (per-run logs, not committed)
+
+Drop 1 commands (from <drop>):
+  env -u TRIAGE_REVIEW_BELOW \
+    TRIAGE_PROVIDER=openai \
+    AI_BASE_URL=http://127.0.0.1:11434/v1 \
+    AI_MODEL=<qwen2.5:7b or qwen2.5:1.5b> \
+    AI_API_KEY=ollama \
+    python3 -u triage.py run samples.jsonl
+
+----- qwen2.5:7b  (2026-11-18 21:43:01–21:43:42 CST, 41s, exit 0) -----
+HD-101         helpdesk             network           1.00 P1  -> netops               auto
+HD-102         helpdesk             access            0.90 P3  -> identity-team        auto
+HD-103         helpdesk             software          1.00 P3  -> app-support          auto
+SEC-201        security_alerts      phishing          1.00 P1  -> soc-tier1            REVIEW: queue is always human-reviewed
+SEC-202        security_alerts      anomaly           0.80 P3  -> soc-tier1            REVIEW: queue is always human-reviewed
+INC-301        oncall_incidents     availability      0.90 P1  -> primary-oncall       auto
+BUG-401        bug_reports          ui                0.95 P3  -> frontend             auto
+CHG-501        change_requests      standard          0.95 P3  -> auto-approve-window  REVIEW: queue is always human-reviewed
+ACC-601        access_requests      read              1.00 P3  -> manager-approval     REVIEW: queue is always human-reviewed
+INV-701        vendor_invoices      unmatched         0.80 P1  -> ap-exceptions        REVIEW: label 'unmatched' always gets a person
+RES-801        resumes_to_openings  cloud_engineer    0.90 P3  -> recruiter-cloud      REVIEW: queue is always human-reviewed
+CX-901         customer_email       billing           0.90 P3  -> billing-desk         auto
+CX-902         customer_email       account           0.80 P3  -> account-desk         auto
+
+13 items, 7 auto-routed, 6 sent to a person
+
+----- qwen2.5:1.5b  (2026-11-18 21:45:57–21:46:03 CST, 6s, exit 0) -----
+HD-101         helpdesk             network           0.98 P1  -> netops               auto
+HD-102         helpdesk             software          1.00 P3  -> app-support          auto
+HD-103         helpdesk             network           1.00 P3  -> netops               auto
+SEC-201        security_alerts      phishing          1.00 P1  -> soc-tier1            REVIEW: queue is always human-reviewed
+SEC-202        security_alerts      noise             1.00 P3  -> soc-tuning           REVIEW: queue is always human-reviewed
+INC-301        oncall_incidents     data              0.99 P1  -> data-oncall          REVIEW: label 'data' always gets a person
+BUG-401        bug_reports          perf              0.98 P3  -> core-team            auto
+CHG-501        change_requests      normal            1.00 P3  -> cab-review           REVIEW: queue is always human-reviewed
+ACC-601        access_requests      read              0.99 P3  -> manager-approval     REVIEW: queue is always human-reviewed
+INV-701        vendor_invoices      unmatched         1.00 P1  -> ap-exceptions        REVIEW: label 'unmatched' always gets a person
+RES-801        resumes_to_openings  cloud_engineer    1.00 P3  -> recruiter-cloud      REVIEW: queue is always human-reviewed
+CX-901         customer_email       billing           1.00 P3  -> billing-desk         auto
+CX-902         customer_email       billing           0.00 P3  -> billing-desk         REVIEW: confidence 0.00 < 0.7
+
+13 items, 5 auto-routed, 8 sent to a person
+
+Before/after (honest):
+- First run (1.5b, before the source-queue rule): SEC-201 phishing and SEC-202 (EDR beacon labeled noise at 1.00) were auto-routed. That was the serious miss.
+- After the fix, the same 1.5b labels are still overconfident and often wrong (HD-102 password lockout -> software, HD-103 Excel crash -> network, SEC-202 beacon -> noise at 1.00, INC-301 checkout 5xx -> data, BUG-401 overlap -> perf this time, CX-902 thank-you -> billing at 0.00). But SEC-201 and SEC-202 now go to a person because security_alerts is always_human. ACC-601 and CHG-501 also go to a person because of the source queue, not only because of the label. The 1.5b after-fix count is 5 auto-routed, 8 sent to a person.
+- 7b labels were better: HD-102 access, HD-103 software, SEC-202 anomaly (not noise), INC-301 availability, BUG-401 ui, CHG-501 standard. Source-queue review still held on every security, access, and change item. 7b auto-routed CX-902 (a thank-you) as account at 0.80, just above the 0.7 advisory confidence gate — a mild miss, not a security miss. Count: 7 auto-routed, 6 sent to a person.
+- Safety no longer depends on the model's label for those queues. Confidence remains advisory.
+
+Recommended one-line claim: On a small local model, labels can be overconfident and wrong; the starter still sends every security alert, access request, and change request to a person.

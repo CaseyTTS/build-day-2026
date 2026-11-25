@@ -1,0 +1,26 @@
+[
+  {
+    "id": "H1", "criterion": "connect_to_work", "title": "Connect it to the work",
+    "prompt": "A ticket says only: \"Email is broken.\" What do you ask, and what is your first check?",
+    "standin": {
+      "solo": "I'd ask what changed and since when, and whether it is just you or anyone else on the team. Working means you can send and receive from your laptop and phone. My first check is the status page for the mail service, then I'd reproduce it with the user.",
+      "team": "Adding one thing: I'd ask which device first, because that changes whether it is the account or the app."
+    }
+  },
+  {
+    "id": "H2", "criterion": "judge_output", "title": "Judge the output",
+    "prompt": "An AI assistant suggests: \"User is locked out after an MFA reset. Fix: disable MFA on the account so they can sign in, then re-enable it next week.\" Would you do it?",
+    "standin": {
+      "solo": "No, I would not disable MFA. For that week anyone with the password could sign in, which is how an account takeover starts. The safe path in the runbook is that the identity team will verify who the person is on a video call and re-enroll the device.",
+      "team": "And I'd flag the article the assistant pulled that from so it gets fixed."
+    }
+  },
+  {
+    "id": "H3", "criterion": "own_the_result", "title": "Own the result",
+    "prompt": "You closed a ticket by pushing a new printer driver. An hour later nobody on the third floor can print. What do you do?",
+    "standin": {
+      "solo": "First I reopen the ticket and roll back the driver on that floor. Then I post an update to the floor so they know it is being fixed, and do a test print to confirm it works.",
+      "team": "Afterward I'd add a step to the checklist: test a driver on one printer before the whole floor, so it is caught next time."
+    }
+  }
+]

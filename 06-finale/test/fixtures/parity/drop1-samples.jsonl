@@ -1,0 +1,13 @@
+{"id": "HD-101", "queue": "helpdesk", "text": "VPN is down for the whole floor, nobody can reach the file server"}
+{"id": "HD-102", "queue": "helpdesk", "text": "Locked out after the MFA reset, need my password changed"}
+{"id": "HD-103", "queue": "helpdesk", "text": "Excel crashes every time I open a file over the VPN"}
+{"id": "SEC-201", "queue": "security_alerts", "text": "User clicked a link in a phish and entered my password on the fake page"}
+{"id": "SEC-202", "queue": "security_alerts", "text": "EDR flagged a beacon to an unknown host on a build server"}
+{"id": "INC-301", "queue": "oncall_incidents", "text": "Checkout API returning 5xx, customer-facing, looks down in us-east"}
+{"id": "BUG-401", "queue": "bug_reports", "text": "Save button overlaps the layout on small screens"}
+{"id": "CHG-501", "queue": "change_requests", "text": "Standard change: cert renewal on the internal wiki, pre-approved template"}
+{"id": "ACC-601", "queue": "access_requests", "text": "Need read-only viewer access to the finance dashboard"}
+{"id": "INV-701", "queue": "vendor_invoices", "text": "Invoice for cloud backup, no PO attached, final notice"}
+{"id": "RES-801", "queue": "resumes_to_openings", "text": "Six years with Terraform, AWS and Kubernetes; on-call for a platform team"}
+{"id": "CX-901", "queue": "customer_email", "text": "I was charged twice, please refund the duplicate invoice"}
+{"id": "CX-902", "queue": "customer_email", "text": "Hello, just wanted to say thanks"}

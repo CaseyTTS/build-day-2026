@@ -1,0 +1,45 @@
+{
+  "id": "content-seat-work-sample",
+  "version": "1.0.0",
+  "appliesTo": ["human", "bot", "team"],
+  "note": "One rubric for every candidate type, built the same way as Build Day drop 4's. Scores are decision support for a human reviewer, never a pass/fail verdict.",
+  "scale": { "1": "No evidence in the transcript", "2": "Some evidence, important gaps", "3": "Solid evidence", "4": "Strong, specific evidence" },
+  "criteria": [
+    {
+      "id": "connect_to_work", "taskId": "C1", "title": "Connect it to the work",
+      "description": "Turns a one-line request into a brief: who it is for, what they should do next, which source it rests on, and the deadline.",
+      "levels": { "1": "Starts writing without a brief", "2": "Some questions, no clear reader or action", "3": "Clear reader and action", "4": "Clear reader, action, source and deadline" },
+      "signals": [
+        { "name": "names the reader", "any": ["who the post is for", "who it is for", "audience", "reader"] },
+        { "name": "one clear action", "any": ["one clear action", "call to action", "should do after", "register"] },
+        { "name": "names the source", "any": ["fact sheet", "source doc", "brief says", "the source"] },
+        { "name": "asks the deadline", "any": ["deadline", "when it needs", "by when", "publish date"] }
+      ],
+      "followUp": "Ask which missing fact would most change the draft."
+    },
+    {
+      "id": "judge_output", "taskId": "C2", "title": "Judge the output",
+      "description": "Finds the unsupported claim in an AI draft, explains why it matters, and rewrites it from the source.",
+      "levels": { "1": "Approves the draft", "2": "Senses a problem, does not pin it down", "3": "Cuts the claim and rewrites it", "4": "Cuts it, explains the risk, rewrites from the source and adds a check" },
+      "signals": [
+        { "name": "finds the unsupported claim", "any": ["fastest", "not supported", "does not support", "unsupported"] },
+        { "name": "explains why it matters", "any": ["trust", "can't back", "cannot back", "misleading"] },
+        { "name": "rewrites from the source", "any": ["rewrite", "instead say", "works offline", "from the fact sheet"] },
+        { "name": "adds a check", "any": ["checklist", "check every claim", "claim check", "before review"] }
+      ],
+      "followUp": "Show them a second draft with a softer overclaim and ask how they would catch it."
+    },
+    {
+      "id": "own_the_result", "taskId": "C3", "title": "Own the result",
+      "description": "When a published post has an error: corrects it visibly, tells the people affected, and changes the process.",
+      "levels": { "1": "Deletes quietly or blames the tool", "2": "Fixes it, no communication", "3": "Visible correction and the right people told", "4": "All of that, plus what changes next time" },
+      "signals": [
+        { "name": "visible correction", "any": ["correction under", "post a correction", "visible correction", "not delete"] },
+        { "name": "tells the people affected", "any": ["tell the editor", "let registrants know", "tell the events team", "email registrants"] },
+        { "name": "fixes the source", "any": ["fix the draft", "update the brief", "fix the source"] },
+        { "name": "learns", "any": ["next time", "second reader", "add a step", "checklist"] }
+      ],
+      "followUp": "Ask them to draft the one-line correction they would post."
+    }
+  ]
+}

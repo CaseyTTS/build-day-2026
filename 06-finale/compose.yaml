@@ -1,0 +1,21 @@
+# Home lab: run the same image on any Docker host (taken from Build Day drop 5).
+#   docker compose run --rm dev                                   # install, test, run the helpdesk playbook
+#   docker compose run --rm dev npm run start -- --playbook recruiting
+# To use a local Ollama on the Docker host instead of the stand-in, add to environment:
+#   MODEL_PROVIDER: ollama
+#   MODEL: <a model you pulled>
+#   OLLAMA_HOST: http://host.docker.internal:11434
+services:
+  dev:
+    image: mcr.microsoft.com/devcontainers/typescript-node:22-bookworm
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - node_modules:/workspace/node_modules   # keep host and container installs separate
+    environment:
+      DEVCONTAINER: "true"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: bash -lc "npm ci && npm test && npm run start -- --playbook helpdesk"
+volumes:
+  node_modules:

@@ -1,0 +1,14 @@
+# Home lab: run the same image on any Docker host (a Proxmox VM or LXC with Docker, a spare PC, a NAS).
+#   docker compose run --rm dev npm run check
+services:
+  dev:
+    image: mcr.microsoft.com/devcontainers/typescript-node:22-bookworm
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - node_modules:/workspace/node_modules   # keep host and container installs separate
+    environment:
+      DEVCONTAINER: "true"
+    command: bash -lc "npm ci && npm run check && npm start"
+volumes:
+  node_modules:

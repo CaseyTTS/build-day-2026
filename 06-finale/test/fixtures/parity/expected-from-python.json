@@ -1,0 +1,231 @@
+{
+ "generated_by": "drop-1 triage.py and drop-2 rag.py (Python 3, stand-in/mock mode), Nov 18 2026",
+ "triage": [
+  {
+   "id": "HD-101",
+   "queue": "helpdesk",
+   "label": "network",
+   "confidence": 1.0,
+   "priority": "P1",
+   "route": "netops",
+   "review": null
+  },
+  {
+   "id": "HD-102",
+   "queue": "helpdesk",
+   "label": "access",
+   "confidence": 1.0,
+   "priority": "P3",
+   "route": "identity-team",
+   "review": null
+  },
+  {
+   "id": "HD-103",
+   "queue": "helpdesk",
+   "label": "software",
+   "confidence": 0.6666666666666666,
+   "priority": "P3",
+   "route": "app-support",
+   "review": "confidence 0.67 < 0.7"
+  },
+  {
+   "id": "SEC-201",
+   "queue": "security_alerts",
+   "label": "phishing",
+   "confidence": 1.0,
+   "priority": "P1",
+   "route": "soc-tier1",
+   "review": "queue is always human-reviewed"
+  },
+  {
+   "id": "SEC-202",
+   "queue": "security_alerts",
+   "label": "malware",
+   "confidence": 1.0,
+   "priority": "P3",
+   "route": "soc-ir",
+   "review": "queue is always human-reviewed"
+  },
+  {
+   "id": "INC-301",
+   "queue": "oncall_incidents",
+   "label": "availability",
+   "confidence": 1.0,
+   "priority": "P1",
+   "route": "primary-oncall",
+   "review": null
+  },
+  {
+   "id": "BUG-401",
+   "queue": "bug_reports",
+   "label": "ui",
+   "confidence": 1.0,
+   "priority": "P3",
+   "route": "frontend",
+   "review": null
+  },
+  {
+   "id": "CHG-501",
+   "queue": "change_requests",
+   "label": "standard",
+   "confidence": 1.0,
+   "priority": "P3",
+   "route": "auto-approve-window",
+   "review": "queue is always human-reviewed"
+  },
+  {
+   "id": "ACC-601",
+   "queue": "access_requests",
+   "label": "read",
+   "confidence": 1.0,
+   "priority": "P3",
+   "route": "manager-approval",
+   "review": "queue is always human-reviewed"
+  },
+  {
+   "id": "INV-701",
+   "queue": "vendor_invoices",
+   "label": "unmatched",
+   "confidence": 1.0,
+   "priority": "P1",
+   "route": "ap-exceptions",
+   "review": "label 'unmatched' always gets a person"
+  },
+  {
+   "id": "RES-801",
+   "queue": "resumes_to_openings",
+   "label": "cloud_engineer",
+   "confidence": 1.0,
+   "priority": "P3",
+   "route": "recruiter-cloud",
+   "review": "queue is always human-reviewed"
+  },
+  {
+   "id": "CX-901",
+   "queue": "customer_email",
+   "label": "billing",
+   "confidence": 1.0,
+   "priority": "P3",
+   "route": "billing-desk",
+   "review": null
+  },
+  {
+   "id": "CX-902",
+   "queue": "customer_email",
+   "label": "unknown",
+   "confidence": 0.0,
+   "priority": "P3",
+   "route": "triage-humans",
+   "review": "no confident label"
+  }
+ ],
+ "rag": [
+  {
+   "q": "My VPN won't connect, what should I check first?",
+   "groups": [
+    "everyone"
+   ],
+   "hits": [
+    [
+     0.396,
+     "vpn.md"
+    ],
+    [
+     0.28,
+     "vpn.md"
+    ],
+    [
+     0.0,
+     "expenses.md"
+    ]
+   ],
+   "answer": "When the VPN will not connect First check that your laptop clock is correct, because certificate checks fail when the time is off. [1]"
+  },
+  {
+   "q": "Who do I page for a SEV1?",
+   "groups": [
+    "everyone",
+    "engineering"
+   ],
+   "hits": [
+    [
+     0.424,
+     "oncall.md"
+    ],
+    [
+     0.183,
+     "oncall.md"
+    ],
+    [
+     0.0,
+     "expenses.md"
+    ]
+   ],
+   "answer": "Page the incident commander for every SEV1. [1]"
+  },
+  {
+   "q": "Where do software purchases go?",
+   "groups": [
+    "everyone"
+   ],
+   "hits": [
+    [
+     0.387,
+     "expenses.md"
+    ],
+    [
+     0.0,
+     "vpn.md"
+    ],
+    [
+     0.0,
+     "vpn.md"
+    ]
+   ],
+   "answer": "Software purchases go through procurement, not expenses, so licenses are tracked. [1]"
+  },
+  {
+   "q": "When are accruals posted?",
+   "groups": [
+    "everyone"
+   ],
+   "hits": [
+    [
+     0.0,
+     "expenses.md"
+    ],
+    [
+     0.0,
+     "vpn.md"
+    ],
+    [
+     0.0,
+     "vpn.md"
+    ]
+   ],
+   "answer": "I don't know from the documents you can access."
+  },
+  {
+   "q": "When are accruals posted?",
+   "groups": [
+    "everyone",
+    "finance"
+   ],
+   "hits": [
+    [
+     0.343,
+     "finance-close.md"
+    ],
+    [
+     0.0,
+     "expenses.md"
+    ],
+    [
+     0.0,
+     "vpn.md"
+    ]
+   ],
+   "answer": "Accruals are posted on the second business day. [1]"
+  }
+ ]
+}
