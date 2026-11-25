@@ -19,7 +19,7 @@ the same container image. It prints where it thinks it is running.
 - `compose.yaml`: for any Docker host in a home lab
 
 ## Run it
-**On your machine (Node 22+):**
+**On your machine (Node 22.13+):**
 ```bash
 npm ci && npm test && npm run demo     # or: npm run check (lint + test)
 ```
