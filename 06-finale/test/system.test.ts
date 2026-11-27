@@ -21,7 +21,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const FIX = join(ROOT, "test/fixtures");
 const standin = new StandInModel();
 const tmp = () => mkdtempSync(join(tmpdir(), "bd6-"));
-const PLAYBOOKS = ["helpdesk", "recruiting", "marketing"];
+const PLAYBOOKS = ["helpdesk", "recruiting", "marketing", "scheduling"];
 
 // ---------- the ports match the Python drops ----------
 test("triage port matches drop 1 (triage.py) on drop 1's own samples", async () => {
@@ -78,7 +78,7 @@ test("harness: default deny, unknown and unlisted tools denied, ask needs a pers
 });
 
 // ---------- playbooks: config, not code ----------
-test("schema: the three shipped playbooks pass", () => {
+test("schema: the shipped playbooks pass", () => {
   for (const p of PLAYBOOKS) assert.equal(loadPlaybook(p).name, p);
 });
 
@@ -113,7 +113,9 @@ for (const p of PLAYBOOKS) {
     const denied = await runPlaybook(pb, { model: standin, approve: "deny", outRoot: out });
     const approved = await runPlaybook(pb, { model: standin, approve: "yes", outRoot: out });
     const calls = (r: typeof denied) => r.items.flatMap((i) => i.calls);
-    for (const c of calls(denied)) if (pb.harness.policy[c.tool] === "ask") assert.equal(c.decision, "not-approved", `${p} ${c.tool}`);
+    // "skipped" (nothing to share or send) and "deny" (an item-level rule refused it first) never reached the tool either.
+    for (const c of calls(denied)) if (pb.harness.policy[c.tool] === "ask") assert.ok(["not-approved", "skipped", "deny"].includes(c.decision), `${p} ${c.tool}: ${c.decision}`);
+    assert.ok(calls(denied).some((c) => pb.harness.policy[c.tool] === "ask" && c.decision === "not-approved"), `${p}: the denied run should refuse at least one ask`);
     assert.ok(calls(approved).some((c) => pb.harness.policy[c.tool] === "ask" && c.decision === "allow"), `${p}: approved run should let an ask through`);
     for (const c of [...calls(denied), ...calls(approved)]) if ((pb.harness.policy[c.tool] ?? "deny") === "deny") assert.notEqual(c.decision, "allow", `${p} ${c.tool}`);
     for (const r of [denied, approved]) {

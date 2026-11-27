@@ -14,6 +14,7 @@ import { renderReport } from "./interviewer/report.js";
 import { loadRubric } from "./interviewer/rubric.js";
 import { scoreTranscript } from "./interviewer/score.js";
 import type { Candidate, Task } from "./interviewer/types.js";
+import { draftInvite, findSlots, loadCalendars, type InterviewRequest, type Slot } from "./scheduler.js";
 
 interface CandidateSpec { kind: "human" | "bot" | "team"; id: string; answers?: string[]; members?: CandidateSpec[] }
 interface PlaybookTask extends Task { standin?: { solo: string; team: string } }
@@ -21,6 +22,7 @@ interface PlaybookTask extends Task { standin?: { solo: string; team: string } }
 export interface ItemResult {
   id: string; triage: TriageResult; rag: { text: string; sources: string[]; grounded: boolean; groups: string[] };
   interview?: { scores: string; report: string } | { declined: true };
+  schedule?: { slots: Slot[]; problems: string[]; invite?: string };
   calls: GateOutcome[]; humanDecisions: string[];
 }
 export interface RunResult { playbook: string; approve: ApproveMode; outDir: string; model: string; items: ItemResult[] }
@@ -72,6 +74,7 @@ export async function runPlaybook(pb: Playbook, opts: { model: ChatModel; approv
     if (opts.model instanceof StandInModel) interviewModel = opts.model.withCanned(canned);
   }
 
+  const calendars = pb.scheduler ? loadCalendars(join(pb.dir, pb.scheduler.calendars)) : undefined;
   print(`Playbook: ${pb.name}  (${pb.title})\nModel: ${opts.model.name}\nApproval gate: ${opts.approve === "deny" ? "deny (default: every 'ask' is refused)" : opts.approve === "yes" ? "approved up front with --approve" : "a person types y/n"}\nDocs: ${pb.rag.docs} (${index.length} chunks)\n`);
   const items: ItemResult[] = [];
   for (const item of readInbox(pb)) {
@@ -113,15 +116,42 @@ export async function runPlaybook(pb: Playbook, opts: { model: ChatModel; approv
       }
     }
 
-    // 4. HARNESS GATE: the playbook's calls for this label, plus anything the sender asked for (untrusted)
-    const vars = { id: item.id, text: item.text, label: tr.label, route: tr.route, draft_path: draftPath, draft, report: reportText, from: String(item.from ?? "") };
-    const template = pb.actions[tr.label] ?? [{ tool: "route_to_queue", args: { queue: "triage-humans", id: "{id}" } }];
-    // A call that shares an interview report is skipped when there is no report (no candidate, or consent declined).
-    for (const c of template.filter((c) => !reportText && Object.values(c.args ?? {}).some((v) => v.includes("{report}")))) {
-      harness.log({ node: "skipped", item: item.id, tool: c.tool, why: "no interview report to share" });
-      result.calls.push({ tool: c.tool, args: {}, decision: "skipped", why: "no interview report to share" });
+    // 3b. SCHEDULER (only where the playbook uses it): open slots from the calendars, then an invite DRAFT
+    let inviteText = "";
+    const invitePath = `drafts/${item.id}-invite.md`;
+    if (pb.scheduler && pb.scheduler.labels.includes(tr.label)) {
+      const req = item.interview as InterviewRequest | undefined;
+      const sr = req && typeof req === "object" ? findSlots(calendars!, req, pb.scheduler.proposals ?? 3) : { slots: [], problems: ["the request has no interview details (candidate, panel, dates)"], checked: 0 };
+      result.schedule = { slots: sr.slots, problems: sr.problems };
+      if (sr.slots.length) {
+        inviteText = draftInvite(calendars!, req!, sr.slots, item.id);
+        result.schedule.invite = invitePath;
+        result.humanDecisions.push(`${item.id}: a recruiter picks one of ${sr.slots.length} proposed times and approves the invite. Nothing was sent.`);
+      } else {
+        const why = sr.problems.length ? sr.problems.join("; ") : `no time where everyone is free in their working hours, ${req!.from} to ${req!.to}`;
+        result.humanDecisions.push(`${item.id}: no slot proposed (${why}). A recruiter finds a time with the people involved.`);
+      }
+      harness.log({ node: "schedule", item: item.id, slots: sr.slots.map((x) => x.start), problems: sr.problems, checked: sr.checked });
     }
-    const planned: ToolCall[] = template.filter((c) => reportText || !Object.values(c.args ?? {}).some((v) => v.includes("{report}")))
+
+    // 4. HARNESS GATE: the playbook's calls for this label, plus anything the sender asked for (untrusted)
+    const vars = { id: item.id, text: item.text, label: tr.label, route: tr.route, draft_path: draftPath, draft, report: reportText, invite_path: invitePath, invite: inviteText, from: String(item.from ?? "") };
+    const template = pb.actions[tr.label] ?? [{ tool: "route_to_queue", args: { queue: "triage-humans", id: "{id}" } }];
+    // A call that shares an interview report is skipped when there is no report (no candidate, or consent declined);
+    // a call that carries an invite is skipped when no slot was found (there is nothing to send).
+    const missing = (c: ToolCall): string | null => {
+      const vals = Object.values(c.args ?? {});
+      if (!reportText && vals.some((v) => v.includes("{report}"))) return "no interview report to share";
+      if (!inviteText && vals.some((v) => v.includes("{invite}"))) return "no open slot, so no invite";
+      return null;
+    };
+    for (const c of template) {
+      const why = missing(c);
+      if (!why) continue;
+      harness.log({ node: "skipped", item: item.id, tool: c.tool, why });
+      result.calls.push({ tool: c.tool, args: {}, decision: "skipped", why });
+    }
+    const planned: ToolCall[] = template.filter((c) => !missing(c))
       .map((c) => ({ tool: c.tool, args: Object.fromEntries(Object.entries(c.args ?? {}).map(([k, v]) => [k, fill(v, vars)])), why: c.why ?? `playbook action for "${tr.label}"` }));
     const asked = (Array.isArray(item.requests) ? item.requests as ToolCall[] : []).map((c) => ({ ...c, why: "asked for inside the item (untrusted)" }));
     const fromItem: Set<ToolCall> = new Set(asked);
@@ -129,6 +159,13 @@ export async function runPlaybook(pb: Playbook, opts: { model: ChatModel; approv
       // An item may only save its own draft; it cannot overwrite another item's file.
       if (fromItem.has(call) && call.tool === "save_draft" && call.args?.path !== `drafts/${item.id}.md`) {
         const o = { tool: call.tool, args: call.args ?? {}, decision: "deny" as const, why: "item cannot overwrite another item's draft" };
+        harness.log({ node: "tool_call", tool: o.tool, args: o.args, decision: "deny", why: o.why });
+        result.calls.push(o);
+        continue;
+      }
+      // An item cannot write its own invite: invites come only from the scheduler's draft, and a recruiter approves them.
+      if (fromItem.has(call) && call.tool === "send_invite") {
+        const o = { tool: call.tool, args: call.args ?? {}, decision: "deny" as const, why: "an item cannot send its own invite; only the scheduler's draft goes to a recruiter" };
         harness.log({ node: "tool_call", tool: o.tool, args: o.args, decision: "deny", why: o.why });
         result.calls.push(o);
         continue;
@@ -144,6 +181,7 @@ export async function runPlaybook(pb: Playbook, opts: { model: ChatModel; approv
     print(`${item.id.padEnd(8)} ${tr.label.padEnd(16)} ${tr.confidence.toFixed(2)} ${tr.priority} -> ${tr.route.padEnd(18)} ${tr.review ? "REVIEW: " + tr.review : "auto"}`);
     print(`         rag[${groups.join(",")}]: ${rag.grounded ? rag.text.slice(0, 96) + (rag.text.length > 96 ? "..." : "") : rag.text}`);
     if (result.interview) print(`         interview: ${"declined" in result.interview ? "consent declined, nothing recorded" : result.interview.scores + "  (decision support only)"}`);
+    if (result.schedule) print(result.schedule.slots.length ? result.schedule.slots.map((x, n) => `         slot ${n + 1}: ${Object.values(x.local).join(" | ")}`).join("\n") : `         schedule: no slot proposed (${result.schedule.problems.length ? result.schedule.problems.join("; ") : "no time when everyone is free in their own working hours"})`);
     for (const c of result.calls) print(`         gate: ${c.tool.padEnd(24)} ${c.decision.padEnd(13)} ${(c.result ?? c.why ?? "").slice(0, 70)}`);
   }
   harness.log({ node: "result", items: items.length, calls: items.reduce((a, i) => a + i.calls.length, 0), ran: items.reduce((a, i) => a + i.calls.filter((c) => c.decision === "allow").length, 0) });

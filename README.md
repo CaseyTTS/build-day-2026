@@ -38,6 +38,6 @@ Or run one drop at a time from its folder:
 - **03-harness** — A starter skeleton that gates an agent's tool calls, not a production agent platform or a security sandbox. Run: `python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements-dev.txt && python -m pytest -q`
 - **04-interview** — a starter interview harness that runs one work-sample interview against a person, a bot, or a team and drafts an evidence-backed scorecard, not a hiring system. Run: `npm ci && npm test`
 - **05-homelab** — A starter that shows one TypeScript project running the same way on a home-lab Docker host and in a cloud dev environment; it is not a deployment or hosting setup. Run: `npm ci && npm test`
-- **06-finale** — A runnable reference system that shows five starters working together and repurposed by config, not a production platform. Run: `npm ci && npm test`
+- **06-finale** — A runnable reference system that shows five starters working together and repurposed by config, not a production platform. Playbooks: help desk, recruiting, marketing and an interview scheduling assistant (all sample data made up). Run: `npm ci && npm test`
 
 Runs in plain VS Code; works the same in Cursor, Claude Code or Codex.

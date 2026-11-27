@@ -145,8 +145,8 @@ Run-NodeDrop '05-homelab' @(
 )
 # Drop 6: run the CLI with node directly (avoids how PowerShell handles "--" when passing args through npm).
 Run-NodeDrop '06-finale' @(
-  ,@('npm run check:playbooks', 'OK: playbook "marketing" passed', { & $Npm run check:playbooks })
-  ,@('npm run demo', 'marketing[\\/]denied[\\/]summary.md', { & $Npm run demo })
+  ,@('npm run check:playbooks', 'OK: playbook "scheduling" passed', { & $Npm run check:playbooks })
+  ,@('npm run demo', 'scheduling[\\/]denied[\\/]summary.md', { & $Npm run demo })
   ,@('marketing --approve', 'marketing[\\/]approved[\\/]summary.md', { & $Npm run build; if ($LASTEXITCODE) { return }; node dist/src/cli.js --playbook marketing --approve })
 )
 

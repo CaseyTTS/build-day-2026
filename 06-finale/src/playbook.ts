@@ -28,6 +28,8 @@ export interface Playbook {
   harness: { policy: Record<string, Decision> }; // tool -> decision; anything not listed is denied
   actions: Record<string, ToolCall[]>; // triage label -> the calls the system proposes
   interviewer?: { labels: string[]; rubric: string; tasks: string; seat_note: string };
+  /** Optional interview scheduling: which labels get slots proposed, and the calendars fixture. */
+  scheduler?: { labels: string[]; calendars: string; proposals?: number };
   /** Folder the playbook was loaded from (set by the loader). */
   dir: string;
 }
@@ -59,7 +61,8 @@ export function checkPlaybook(raw: unknown, dir: string): string[] {
     }
   };
   const paths: [string, unknown][] = [["inbox", raw.inbox], ["rag.docs", isObj(raw.rag) ? raw.rag.docs : undefined],
-    ["interviewer.rubric", isObj(raw.interviewer) ? raw.interviewer.rubric : undefined], ["interviewer.tasks", isObj(raw.interviewer) ? raw.interviewer.tasks : undefined]];
+    ["interviewer.rubric", isObj(raw.interviewer) ? raw.interviewer.rubric : undefined], ["interviewer.tasks", isObj(raw.interviewer) ? raw.interviewer.tasks : undefined],
+    ["scheduler.calendars", isObj(raw.scheduler) ? raw.scheduler.calendars : undefined]];
   for (const [k, v] of paths) if (outside(v)) p.push(`"${k}" must be inside the playbook folder`);
   if (p.length) return p; // never read files outside the playbook folder, so stop here
   if (typeof raw.inbox === "string" && !outside(raw.inbox)) {
@@ -143,6 +146,26 @@ export function checkPlaybook(raw: unknown, dir: string): string[] {
           }
           if (!isStrArr(rub.appliesTo) || !rub.appliesTo.length) p.push(`interviewer rubric needs "appliesTo"`);
         } catch (e) { p.push(`interviewer rubric/tasks is not valid JSON (${(e as Error).message})`); }
+      }
+    }
+  }
+  const sc = raw.scheduler;
+  if (sc !== undefined) {
+    if (!isObj(sc)) p.push(`"scheduler" must be an object`);
+    else {
+      if (!isStrArr(sc.labels) || !sc.labels.length) p.push(`"scheduler.labels" must be a non-empty list`);
+      else for (const l of sc.labels) if (!labels.includes(l)) p.push(`scheduler label "${l}" is not a triage label`);
+      if (sc.proposals !== undefined && (typeof sc.proposals !== "number" || sc.proposals < 1 || sc.proposals > 5)) p.push(`"scheduler.proposals" must be 1 to 5`);
+      if (typeof sc.calendars !== "string" || !existsSync(join(dir, sc.calendars))) p.push(`scheduler calendars file not found`);
+      else {
+        try {
+          const cal = JSON.parse(readFileSync(join(dir, sc.calendars), "utf8")) as { people?: unknown };
+          if (!isObj(cal.people) || !Object.keys(cal.people).length) p.push(`scheduler calendars need a non-empty "people" object`);
+          else for (const [id, who] of Object.entries(cal.people)) {
+            if (!isObj(who) || typeof who.tz !== "string" || typeof who.name !== "string") { p.push(`calendar "${id}" needs "name" and "tz"`); continue; }
+            try { new Intl.DateTimeFormat("en-US", { timeZone: who.tz }); } catch { p.push(`calendar "${id}" has an unknown time zone "${who.tz}"`); }
+          }
+        } catch (e) { p.push(`scheduler calendars is not valid JSON (${(e as Error).message})`); }
       }
     }
   }

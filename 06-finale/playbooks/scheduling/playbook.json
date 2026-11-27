@@ -1,0 +1,46 @@
+{
+  "name": "scheduling",
+  "title": "Interview scheduling assistant",
+  "description": "A recruiting team's interview requests triaged, open times found on everyone's calendar in their own time zone, and invites drafted for a recruiter. send_invite is always gated and is a stub: nothing is sent and nothing is booked from this repo. All people, companies and calendars are made up.",
+  "inbox": "inbox.jsonl",
+  "triage": {
+    "labels": {
+      "interview_request": ["schedule", "set up", "book a", "find a time"],
+      "reschedule": ["reschedule", "move the interview", "can't make", "cancel"],
+      "candidate_question": ["what should i bring", "parking", "where do i", "how long", "salary", "dress code"]
+    },
+    "routes": { "interview_request": "recruiting-coordinator", "reschedule": "recruiting-coordinator", "candidate_question": "candidate-care" },
+    "urgent_terms": ["today", "asap", "right now"],
+    "always_human_terms": ["cancel", "without approval", "skip the recruiter"],
+    "always_human_labels": ["reschedule"],
+    "review_below": 0.5
+  },
+  "rag": { "docs": "docs", "default_groups": ["everyone"], "min_score": 0.12, "mode": "answer" },
+  "harness": {
+    "policy": {
+      "save_draft": "allow",
+      "route_to_queue": "allow",
+      "send_invite": "ask",
+      "send_reply": "ask",
+      "delete_record": "deny",
+      "update_candidate_status": "deny"
+    }
+  },
+  "actions": {
+    "interview_request": [
+      { "tool": "save_draft", "args": { "path": "{invite_path}", "content": "{invite}" }, "why": "invite draft for the recruiter to read" },
+      { "tool": "send_invite", "args": { "id": "{id}", "to": "candidate and panel", "content": "{invite}" }, "why": "a recruiter approves every invite before anyone is contacted" },
+      { "tool": "route_to_queue", "args": { "queue": "{route}", "id": "{id}" } }
+    ],
+    "reschedule": [
+      { "tool": "save_draft", "args": { "path": "{draft_path}", "content": "{draft}" } },
+      { "tool": "route_to_queue", "args": { "queue": "{route}", "id": "{id}" } }
+    ],
+    "candidate_question": [
+      { "tool": "save_draft", "args": { "path": "{draft_path}", "content": "{draft}" } },
+      { "tool": "send_reply", "args": { "id": "{id}", "to": "{from}", "content": "{draft}" }, "why": "a person checks every reply before it goes to a candidate" },
+      { "tool": "route_to_queue", "args": { "queue": "{route}", "id": "{id}" } }
+    ]
+  },
+  "scheduler": { "labels": ["interview_request"], "calendars": "calendars.json", "proposals": 3 }
+}

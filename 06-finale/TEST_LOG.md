@@ -10,17 +10,18 @@ npm test                                   # builds, then node --test on dist/te
 npm run start -- --playbook helpdesk       # and --approve
 npm run start -- --playbook recruiting     # and --approve
 npm run start -- --playbook marketing      # and --approve
+npm run start -- --playbook scheduling     # and --approve
 npm run check:playbooks
 node dist/src/cli.js --playbook test/fixtures/bad-playbook   # exit code 3
 ```
 
-## Tests (31, node:test), all pass (29 on Node 24.22.1 and Node 22.23.5 on 2026-11-18; 31 on Node 24.22.1 after tests 30-31 were added)
+## Tests (42, node:test), all pass (29 on Node 24.22.1 and Node 22.23.5 on 2026-11-18; 31 on Node 24.22.1 after tests 30-31 were added; 42 on Node 24.22.1 on 2026-11-27 after the scheduling playbook: one more end-to-end run plus tests 33-42 in `test/scheduler.test.ts`)
 1. Triage port matches drop 1's `triage.py` on its 13 samples (label, confidence, priority, route, review).
 2. RAG port matches drop 2's `rag.py` on its 5 questions (hits, scores, answers).
 3. RAG: a doc the reader's groups can't see never reaches ranking; the answer is "I don't know".
 4. Harness: unknown tool, unlisted tool, deny and sandbox escape are denied; ask → not-approved by default; approved runs the stub; every call is logged.
-5–8. Schema: the three playbooks pass; a malformed playbook lists every problem; the CLI exits 3 before any work; publish is never "allow".
-9–11. End to end per playbook: denied run lets nothing past an "ask", approved run lets asks through, "deny" stays denied, outputs and audit log written, at least one honest "I don't know".
+5–8. Schema: the four playbooks pass; a malformed playbook lists every problem; the CLI exits 3 before any work; publish is never "allow".
+9–11 and 32. End to end per playbook (32 is scheduling): denied run lets nothing past an "ask" (a call skipped before the gate also counts as not passed), approved run lets asks through, "deny" stays denied, outputs and audit log written, at least one honest "I don't know".
 12. Recruiting: every item goes to a person; `update_candidate_status` is denied even when approved; the interviewer ran for a person, a bot and a team.
 13. Recruiting: declined consent records nothing; the scorecard share is skipped.
 14. Interview reports: banner present, every evidence quote is verbatim from the transcript, no verdict line.
@@ -41,12 +42,23 @@ node dist/src/cli.js --playbook test/fixtures/bad-playbook   # exit code 3
 29. Security: a symlink attachment that points outside the playbook folder is rejected.
 30. Portability: the CLI runs and finds its playbooks from a path with spaces, %, # and unicode.
 31. Portability: the CLI runs when launched through a symlink.
+32. End to end (scheduling), as 9–11.
+33. Scheduler, time zones: a New York / Chicago / London panel only gets times inside all three working days, and each person sees their own clock.
+34. Scheduler, daylight saving: 9:00 AM Chicago is 15:00 UTC before the March change and 14:00 UTC after it.
+35. Scheduler, conflicts: no proposal overlaps a busy block or another proposal.
+36. Scheduler, no slot: zones that never overlap, a fully booked calendar and a weekend all return no slot, after checking.
+37. Scheduler: a bad request (unknown person, unknown zone, no panel, bad window, odd length) is reported, not guessed.
+38. Scheduling: the gate denies by default; no invite reaches even the stub outbox; an invite written inside an item is denied; the invite draft says "Not sent".
+39. Scheduling: no slot means no invite and a recruiter takes over; a delete asked for in a reschedule is denied.
+40. Scheduling: even approved, `send_invite` is a stub that only writes a local line, only the scheduler's draft reaches it, and an item's own invite stays denied.
+41. Scheduling: the salary question gets "I don't know"; the recruiters-only doc never reaches a candidate's answer.
+42. Scheduling schema: a broken `scheduler` section (unknown label, bad zone, too many proposals, path outside the folder) is caught; `--check scheduling` passes.
 
 Stand-in proof regenerated 2026-11-18 22:29 CST from a clean copy at `<drop>`. Interviewer `score.ts` sha256 prefix `8f5ac727c062` (drop 4, after recording the raw model score).
 
 ## Mocked or not run
 - Stand-in model in every default run: no real AI model in `proof.txt`.
 - Scripted people (fixed lines in `inbox.jsonl`).
-- All tools are local stubs. `publish` is a no-op. Nothing was sent, published or changed outside `outputs/`.
+- All tools are local stubs. `publish` is a no-op; `send_invite` only writes `invites-stub.jsonl`. Calendars are fixture JSON with made-up people. Nothing was sent, published or changed outside `outputs/`.
 - `--approve` stands in for a person approving the whole run.
 - No Docker on this machine: `.devcontainer/devcontainer.json` and `compose.yaml` were not run. Windows and macOS were not tested.

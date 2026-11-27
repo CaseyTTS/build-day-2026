@@ -120,8 +120,8 @@ run_node_drop 05-homelab \
   "npm run demo" "place: "
 # Drop 6: each demo must actually print its run summary, not just exit 0.
 run_node_drop 06-finale \
-  "npm run check:playbooks" 'OK: playbook "marketing" passed' \
-  "npm run demo" "Wrote outputs/marketing/denied/summary.md" \
+  "npm run check:playbooks" 'OK: playbook "scheduling" passed' \
+  "npm run demo" "Wrote outputs/scheduling/denied/summary.md" \
   "npm run start -- --playbook marketing --approve" "Wrote outputs/marketing/approved/summary.md"
 
 cd "$REPO"

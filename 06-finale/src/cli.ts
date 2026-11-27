@@ -17,7 +17,7 @@ export function parseArgs(argv: string[]): { playbook: string; approve: ApproveM
 
 async function main(): Promise<void> {
   const a = parseArgs(process.argv.slice(2));
-  if (!a.playbook) { console.error("Usage: npm run start -- --playbook helpdesk|recruiting|marketing [--approve]"); process.exitCode = 2; return; }
+  if (!a.playbook) { console.error("Usage: npm run start -- --playbook helpdesk|recruiting|marketing|scheduling [--approve]"); process.exitCode = 2; return; }
   try {
     const pb = loadPlaybook(a.playbook);
     if (a.checkOnly) { console.log(`OK: playbook "${pb.name}" passed the schema check.`); return; }

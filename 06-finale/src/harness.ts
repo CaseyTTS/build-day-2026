@@ -50,6 +50,8 @@ export const TOOLS: Record<string, { risk: Risk; fn: ToolFn; about: string }> = 
     fn: (sb, a) => `STUB, no directory touched. Recorded in ${writeIn(sb, "access-changes-stub.jsonl", JSON.stringify({ id: req(a, "id"), change: req(a, "change") }) + "\n", true)}` },
   publish: { risk: "external", about: "STUB: a no-op. Nothing can be published from this repo",
     fn: (sb, a) => `STUB, nothing was published. Recorded in ${writeIn(sb, "publish-stub.jsonl", JSON.stringify({ id: req(a, "id"), channel: a.channel ?? "", would_publish: req(a, "path") }) + "\n", true)}` },
+  send_invite: { risk: "external", about: "STUB: records an interview invite locally; sends nothing, books nothing",
+    fn: (sb, a) => `STUB, nothing sent. Recorded in ${writeIn(sb, "invites-stub.jsonl", JSON.stringify({ id: req(a, "id"), to: a.to ?? "", invite: req(a, "content") }) + "\n", true)}` },
   update_candidate_status: { risk: "privileged", about: "STUB: would change a candidate's status. Recruiting denies it: people decide",
     fn: (sb, a) => `STUB. Recorded in ${writeIn(sb, "status-stub.jsonl", JSON.stringify(a) + "\n", true)}` },
   delete_record: { risk: "destructive", about: "STUB: would delete a record",

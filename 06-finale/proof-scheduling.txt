@@ -1,0 +1,134 @@
+# Build Day drop 6: scheduling playbook proof (stand-in model, no network, fictional people and calendars)
+# Generated 2026-11-27T14:30Z on Node v24.22.1
+
+$ npm run start -- --playbook scheduling        # default gate: deny
+Playbook: scheduling  (Interview scheduling assistant)
+Model: stand-in (built-in, deterministic, no network)
+Approval gate: deny (default: every 'ask' is refused)
+Docs: docs (8 chunks)
+
+S-401    interview_request 1.00 P3 -> recruiting-coordinator auto
+         rag[everyone]: Video interviews Video interviews use the link in your invite. [1]
+         slot 1: Tue, Dec 1, 11:00 AM EST | Tue, Dec 1, 10:00 AM CST | Tue, Dec 1, 4:00 PM GMT
+         slot 2: Thu, Dec 3, 10:00 AM EST | Thu, Dec 3, 9:00 AM CST | Thu, Dec 3, 3:00 PM GMT
+         slot 3: Thu, Dec 3, 10:45 AM EST | Thu, Dec 3, 9:45 AM CST | Thu, Dec 3, 3:45 PM GMT
+         gate: save_draft               allow         draft saved to drafts/S-401-invite.md
+         gate: send_invite              not-approved  a recruiter approves every invite before anyone is contacted
+         gate: route_to_queue           allow         queued in queues/recruiting-coordinator.jsonl
+S-402    interview_request 1.00 P3 -> recruiting-coordinator auto
+         rag[everyone]: How interview times are proposed The assistant looks for times when the candidate and every inte...
+         schedule: no slot proposed (no time when everyone is free in their own working hours)
+         gate: save_draft               skipped       no open slot, so no invite
+         gate: send_invite              skipped       no open slot, so no invite
+         gate: route_to_queue           allow         queued in queues/recruiting-coordinator.jsonl
+S-403    interview_request 1.00 P1 -> recruiting-coordinator REVIEW: mentions 'skip the recruiter', which always gets a person
+         rag[everyone]: Who approves the invite A recruiter reads every invite draft, picks one time and approves it. [1...
+         schedule: no slot proposed (no time when everyone is free in their own working hours)
+         gate: save_draft               skipped       no open slot, so no invite
+         gate: send_invite              skipped       no open slot, so no invite
+         gate: route_to_queue           allow         queued in queues/recruiting-coordinator.jsonl
+         gate: send_invite              deny          an item cannot send its own invite; only the scheduler's draft goes to
+S-404    reschedule       0.75 P3 -> recruiting-coordinator REVIEW: mentions 'cancel', which always gets a person
+         rag[everyone]: Who approves the invite A recruiter reads every invite draft, picks one time and approves it. [1...
+         gate: save_draft               allow         draft saved to drafts/S-404.md
+         gate: route_to_queue           allow         queued in queues/recruiting-coordinator.jsonl
+         gate: delete_record            deny          asked for inside the item (untrusted)
+S-405    candidate_question 1.00 P3 -> candidate-care     auto
+         rag[everyone]: What to bring to the onsite interview Bring a photo ID for the front desk and a laptop if you wa...
+         gate: save_draft               allow         draft saved to drafts/S-405.md
+         gate: send_reply               not-approved  a person checks every reply before it goes to a candidate
+         gate: route_to_queue           allow         queued in queues/candidate-care.jsonl
+S-406    candidate_question 1.00 P3 -> candidate-care     auto
+         rag[everyone]: I don't know from the documents you can access.
+         gate: save_draft               allow         draft saved to drafts/S-406.md
+         gate: send_reply               not-approved  a person checks every reply before it goes to a candidate
+         gate: route_to_queue           allow         queued in queues/candidate-care.jsonl
+
+6 items | gate: 10 allowed, 3 not approved, 2 denied, 0 errors | 8 decisions waiting on a person
+Wrote outputs/scheduling/denied/summary.md, results.json, audit.jsonl
+Decision support only. A human makes the call. No auto-reject.
+
+$ cat outputs/scheduling/denied/drafts/S-401-invite.md
+DRAFT INVITE for recruiter approval. Not sent. (S-401)
+
+Interview: Backend engineer (Larkspur Robotics, fictional), 45 minutes, video call
+Candidate: Jordan Reyes (candidate, America/New_York)
+Panel: Priya Lindqvist (hiring manager, America/Chicago); Sam Okonkwo-Hale (interviewer, Europe/London)
+
+Proposed times (each person sees their own time zone):
+1. 2026-12-01T16:00:00.000Z to 2026-12-01T16:45:00.000Z UTC
+   - Jordan Reyes: Tue, Dec 1, 11:00 AM EST
+   - Priya Lindqvist: Tue, Dec 1, 10:00 AM CST
+   - Sam Okonkwo-Hale: Tue, Dec 1, 4:00 PM GMT
+2. 2026-12-03T15:00:00.000Z to 2026-12-03T15:45:00.000Z UTC
+   - Jordan Reyes: Thu, Dec 3, 10:00 AM EST
+   - Priya Lindqvist: Thu, Dec 3, 9:00 AM CST
+   - Sam Okonkwo-Hale: Thu, Dec 3, 3:00 PM GMT
+3. 2026-12-03T15:45:00.000Z to 2026-12-03T16:30:00.000Z UTC
+   - Jordan Reyes: Thu, Dec 3, 10:45 AM EST
+   - Priya Lindqvist: Thu, Dec 3, 9:45 AM CST
+   - Sam Okonkwo-Hale: Thu, Dec 3, 3:45 PM GMT
+
+A recruiter picks one time and approves the invite. Until then nobody is contacted.
+$ ls outputs/scheduling/denied   # no invites-stub.jsonl: nothing reached even the stub outbox
+audit.jsonl
+drafts
+queues
+results.json
+summary.md
+
+$ npm run start -- --playbook scheduling --approve   # a person approved the run up front
+Playbook: scheduling  (Interview scheduling assistant)
+Model: stand-in (built-in, deterministic, no network)
+Approval gate: approved up front with --approve
+Docs: docs (8 chunks)
+
+S-401    interview_request 1.00 P3 -> recruiting-coordinator auto
+         rag[everyone]: Video interviews Video interviews use the link in your invite. [1]
+         slot 1: Tue, Dec 1, 11:00 AM EST | Tue, Dec 1, 10:00 AM CST | Tue, Dec 1, 4:00 PM GMT
+         slot 2: Thu, Dec 3, 10:00 AM EST | Thu, Dec 3, 9:00 AM CST | Thu, Dec 3, 3:00 PM GMT
+         slot 3: Thu, Dec 3, 10:45 AM EST | Thu, Dec 3, 9:45 AM CST | Thu, Dec 3, 3:45 PM GMT
+         gate: save_draft               allow         draft saved to drafts/S-401-invite.md
+         gate: send_invite              allow         STUB, nothing sent. Recorded in invites-stub.jsonl
+         gate: route_to_queue           allow         queued in queues/recruiting-coordinator.jsonl
+S-402    interview_request 1.00 P3 -> recruiting-coordinator auto
+         rag[everyone]: How interview times are proposed The assistant looks for times when the candidate and every inte...
+         schedule: no slot proposed (no time when everyone is free in their own working hours)
+         gate: save_draft               skipped       no open slot, so no invite
+         gate: send_invite              skipped       no open slot, so no invite
+         gate: route_to_queue           allow         queued in queues/recruiting-coordinator.jsonl
+S-403    interview_request 1.00 P1 -> recruiting-coordinator REVIEW: mentions 'skip the recruiter', which always gets a person
+         rag[everyone]: Who approves the invite A recruiter reads every invite draft, picks one time and approves it. [1...
+         schedule: no slot proposed (no time when everyone is free in their own working hours)
+         gate: save_draft               skipped       no open slot, so no invite
+         gate: send_invite              skipped       no open slot, so no invite
+         gate: route_to_queue           allow         queued in queues/recruiting-coordinator.jsonl
+         gate: send_invite              deny          an item cannot send its own invite; only the scheduler's draft goes to
+S-404    reschedule       0.75 P3 -> recruiting-coordinator REVIEW: mentions 'cancel', which always gets a person
+         rag[everyone]: Who approves the invite A recruiter reads every invite draft, picks one time and approves it. [1...
+         gate: save_draft               allow         draft saved to drafts/S-404.md
+         gate: route_to_queue           allow         queued in queues/recruiting-coordinator.jsonl
+         gate: delete_record            deny          asked for inside the item (untrusted)
+S-405    candidate_question 1.00 P3 -> candidate-care     auto
+         rag[everyone]: What to bring to the onsite interview Bring a photo ID for the front desk and a laptop if you wa...
+         gate: save_draft               allow         draft saved to drafts/S-405.md
+         gate: send_reply               allow         STUB, nothing sent. Recorded in outbox-stub.jsonl
+         gate: route_to_queue           allow         queued in queues/candidate-care.jsonl
+S-406    candidate_question 1.00 P3 -> candidate-care     auto
+         rag[everyone]: I don't know from the documents you can access.
+         gate: save_draft               allow         draft saved to drafts/S-406.md
+         gate: send_reply               allow         STUB, nothing sent. Recorded in outbox-stub.jsonl
+         gate: route_to_queue           allow         queued in queues/candidate-care.jsonl
+
+6 items | gate: 13 allowed, 0 not approved, 2 denied, 0 errors | 5 decisions waiting on a person
+Wrote outputs/scheduling/approved/summary.md, results.json, audit.jsonl
+Decision support only. A human makes the call. No auto-reject.
+
+$ cut -c1-160 outputs/scheduling/approved/invites-stub.jsonl   # the stub only writes this local line; nothing is sent
+{"id":"S-401","to":"candidate and panel","invite":"DRAFT INVITE for recruiter approval. Not sent. (S-401)\n\nInterview: Backend engineer (Larkspur Robotics, fic
+
+$ npm test (summary)
+ℹ tests 42
+ℹ pass 42
+ℹ fail 0
+ℹ skipped 0
