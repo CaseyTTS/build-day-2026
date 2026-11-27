@@ -67,13 +67,31 @@ export function checkPlaybook(raw: unknown, dir: string): string[] {
   if (p.length) return p; // never read files outside the playbook folder, so stop here
   if (typeof raw.inbox === "string" && !outside(raw.inbox)) {
     if (!existsSync(join(dir, raw.inbox))) p.push(`inbox file "${raw.inbox}" not found`);
-    else readFileSync(join(dir, raw.inbox), "utf8").split("\n").forEach((l, n) => {
-      if (!l.trim()) return;
-      let item: unknown;
-      try { item = JSON.parse(l); } catch { p.push(`inbox line ${n + 1} is not valid JSON`); return; }
-      if (!isObj(item) || typeof item.id !== "string" || !ITEM_ID.test(item.id)) p.push(`inbox line ${n + 1}: "id" must be letters, digits, . _ or -`);
-      else if (typeof item.attachment === "string" && outside(item.attachment)) p.push(`inbox line ${n + 1}: attachment must be inside the playbook folder`);
-    });
+    else {
+      const seen = new Set<string>();
+      readFileSync(join(dir, raw.inbox), "utf8").split("\n").forEach((l, n) => {
+        if (!l.trim()) return;
+        let item: unknown;
+        try { item = JSON.parse(l); } catch { p.push(`inbox line ${n + 1} is not valid JSON`); return; }
+        if (!isObj(item) || typeof item.id !== "string" || !ITEM_ID.test(item.id)) { p.push(`inbox line ${n + 1}: "id" must be letters, digits, . _ or -`); return; }
+        // Invite drafts are saved as drafts/<id>-invite.md, so that suffix is reserved and every id must be unique.
+        if (/-invite$/i.test(item.id)) p.push(`inbox line ${n + 1}: "id" may not end in -invite; that name is reserved for invite drafts`);
+        if (seen.has(item.id.toLowerCase())) p.push(`inbox line ${n + 1}: duplicate id "${item.id}"`);
+        seen.add(item.id.toLowerCase());
+        if (typeof item.attachment === "string" && outside(item.attachment)) p.push(`inbox line ${n + 1}: attachment must be inside the playbook folder`);
+        const rq = item.requests;
+        if (rq !== undefined && (!Array.isArray(rq) || !rq.every((c) => isObj(c) && typeof c.tool === "string" && (c.args === undefined || (isObj(c.args) && Object.values(c.args).every((v) => typeof v === "string"))))))
+          p.push(`inbox line ${n + 1}: "requests" must be a list of {tool, args} with string values`);
+        const iv = item.interview;
+        if (iv !== undefined) {
+          if (!isObj(iv)) p.push(`inbox line ${n + 1}: "interview" must be an object`);
+          else {
+            if (!isStrArr(iv.panel) || !iv.panel.length || new Set(iv.panel).size !== iv.panel.length) p.push(`inbox line ${n + 1}: "interview.panel" must be a non-empty list of different calendar ids`);
+            for (const k of ["candidate", "from", "to"]) if (typeof iv[k] !== "string") p.push(`inbox line ${n + 1}: "interview.${k}" must be a string`);
+          }
+        }
+      });
+    }
   }
 
   const t = raw.triage;

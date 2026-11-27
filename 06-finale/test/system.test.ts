@@ -113,8 +113,13 @@ for (const p of PLAYBOOKS) {
     const denied = await runPlaybook(pb, { model: standin, approve: "deny", outRoot: out });
     const approved = await runPlaybook(pb, { model: standin, approve: "yes", outRoot: out });
     const calls = (r: typeof denied) => r.items.flatMap((i) => i.calls);
-    // "skipped" (nothing to share or send) and "deny" (an item-level rule refused it first) never reached the tool either.
-    for (const c of calls(denied)) if (pb.harness.policy[c.tool] === "ask") assert.ok(["not-approved", "skipped", "deny"].includes(c.decision), `${p} ${c.tool}: ${c.decision}`);
+    // Per call: an "ask" is refused at the gate. It may be "skipped" only when its template needs a report or invite
+    // that does not exist, and "deny" only when an item-level rule refused it first. Anything else is a gate that never ran.
+    for (const i of denied.items) for (const c of i.calls) if (pb.harness.policy[c.tool] === "ask") {
+      if (c.decision === "skipped") assert.ok((pb.actions[i.triage.label] ?? []).some((t) => t.tool === c.tool && Object.values(t.args ?? {}).some((v) => /\{(report|invite)\}/.test(v))), `${p} ${i.id} ${c.tool}: skipped, but its template carries no {report}/{invite}`);
+      else if (c.decision === "deny") assert.equal(c.why?.startsWith("an item cannot") || c.why?.startsWith("item cannot"), true, `${p} ${i.id} ${c.tool}: deny on an ask must come from an item-level rule`);
+      else assert.equal(c.decision, "not-approved", `${p} ${i.id} ${c.tool}`);
+    }
     assert.ok(calls(denied).some((c) => pb.harness.policy[c.tool] === "ask" && c.decision === "not-approved"), `${p}: the denied run should refuse at least one ask`);
     assert.ok(calls(approved).some((c) => pb.harness.policy[c.tool] === "ask" && c.decision === "allow"), `${p}: approved run should let an ask through`);
     for (const c of [...calls(denied), ...calls(approved)]) if ((pb.harness.policy[c.tool] ?? "deny") === "deny") assert.notEqual(c.decision, "allow", `${p} ${c.tool}`);

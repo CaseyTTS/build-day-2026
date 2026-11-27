@@ -12,6 +12,8 @@ export interface Slot { start: string; end: string; local: Record<string, string
 export interface ScheduleResult { slots: Slot[]; problems: string[]; checked: number }
 
 const DAY_MS = 86_400_000;
+/** One plain line: letters, digits, spaces and basic punctuation. */
+export const OPENING = /^[\p{L}\p{N} ,.'()&/-]+$/u;
 const STEP_MIN = 15;
 const WEEKDAYS = new Set(["Mon", "Tue", "Wed", "Thu", "Fri"]);
 
@@ -56,13 +58,17 @@ function freeFor(p: Person, start: number, end: number): boolean {
  */
 export function findSlots(cal: Calendars, req: InterviewRequest, max = 3): ScheduleResult {
   const problems: string[] = [];
-  const ids = [req.candidate, ...(req.panel ?? [])];
-  if (!req.panel?.length) problems.push("no interviewer named on the request");
+  const panel = Array.isArray(req.panel) ? req.panel : [];
+  if (!Array.isArray(req.panel) && req.panel !== undefined) problems.push("panel must be a list of calendar ids");
+  const ids = [...new Set([req.candidate, ...panel])]; // a person listed twice is one person
+  if (!panel.length) problems.push("no interviewer named on the request");
   for (const id of ids) {
     const p = cal.people[id];
     if (!p) problems.push(`no calendar for "${id}"`);
     else if (!validZone(p.tz)) problems.push(`"${id}" has an unknown time zone "${p.tz}"`);
   }
+  // The opening is item text that lands inside the invite, so it must be one short plain line (no newlines, no hidden characters).
+  if (req.opening !== undefined && (typeof req.opening !== "string" || req.opening.length > 80 || !OPENING.test(req.opening))) problems.push("opening must be one plain line of up to 80 letters, digits and basic punctuation");
   const minutes = req.minutes ?? 45;
   if (!(minutes >= 15 && minutes <= 240)) problems.push(`interview length ${minutes} min is outside 15-240`);
   const from = Date.parse(`${req.from}T00:00:00Z`), to = Date.parse(`${req.to}T00:00:00Z`) + DAY_MS;
@@ -91,7 +97,7 @@ export function draftInvite(cal: Calendars, req: InterviewRequest, slots: Slot[]
     `DRAFT INVITE for recruiter approval. Not sent. (${itemId})`, "",
     `Interview: ${req.opening ?? "interview"}, ${req.minutes ?? 45} minutes, video call`,
     `Candidate: ${who(req.candidate)}`,
-    `Panel: ${req.panel.map(who).join("; ")}`, "",
+    `Panel: ${[...new Set(req.panel)].filter((id) => id !== req.candidate).map(who).join("; ")}`, "",
     "Proposed times (each person sees their own time zone):",
     ...slots.map((s, n) => `${n + 1}. ${s.start} to ${s.end} UTC\n${Object.entries(s.local).map(([id, t]) => `   - ${cal.people[id]!.name}: ${t}`).join("\n")}`),
     "", "A recruiter picks one time and approves the invite. Until then nobody is contacted.", "",

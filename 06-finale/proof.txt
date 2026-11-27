@@ -1,3 +1,4 @@
+# NOTE: this is the 2026-11-18 run (31 tests, three playbooks). Current counts are in TEST_LOG.md; the scheduling playbook's run is in proof-scheduling.txt.
 # PROOF: Build Day drop 6/6, Assemble it: five builds, one system
 # Generated: 2026-11-18 22:29 CST from a clean copy at <drop> (node_modules, dist and outputs deleted first)
 # MOCKED, plainly:

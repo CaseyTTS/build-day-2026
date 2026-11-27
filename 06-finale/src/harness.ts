@@ -58,6 +58,16 @@ export const TOOLS: Record<string, { risk: Risk; fn: ToolFn; about: string }> = 
     fn: (_sb, a) => `STUB, nothing deleted (${req(a, "id")})` },
 };
 
+/** What a person sees at the y/n gate. For a tool that would reach outside (external), the whole content is shown, never a preview. */
+export function approvalPrompt(call: ToolCall): string {
+  const args = call.args ?? {};
+  if (TOOLS[call.tool]?.risk === "external") {
+    const { content, ...rest } = args;
+    return `\nAPPROVE ${call.tool}(${JSON.stringify(rest)})? Full content below.\n----- begin content -----\n${content ?? ""}\n----- end content -----\n[y/N] `;
+  }
+  return `\nAPPROVE ${call.tool}(${JSON.stringify(args).slice(0, 160)})? [y/N] `;
+}
+
 export interface GateOutcome { tool: string; args: Record<string, string>; decision: "allow" | "deny" | "not-approved" | "error" | "skipped"; result?: string; why?: string }
 
 export class Harness {
@@ -72,15 +82,16 @@ export class Harness {
 
   /** Policy lookup. Unknown tools, and tools the playbook does not list, are denied. */
   permission(call: ToolCall): Decision {
-    if (!TOOLS[call.tool]) return "deny";
-    return this.policy[call.tool] ?? "deny";
+    // typeof + own-property checks: a non-string tool (["send_invite"]) or a prototype key ("constructor") is denied.
+    if (typeof call.tool !== "string" || !Object.hasOwn(TOOLS, call.tool)) return "deny";
+    return Object.hasOwn(this.policy, call.tool) ? this.policy[call.tool]! : "deny";
   }
 
   private async gate(call: ToolCall): Promise<boolean> {
     if (this.approve === "yes") return true; // a person approved this run up front (--approve)
     if (this.approve === "cli") {
       this.rl ??= createInterface({ input: process.stdin, output: process.stdout });
-      return (await this.rl.question(`\nAPPROVE ${call.tool}(${JSON.stringify(call.args ?? {}).slice(0, 160)})? [y/N] `)).trim().toLowerCase() === "y";
+      return (await this.rl.question(approvalPrompt(call))).trim().toLowerCase() === "y";
     }
     return false;
   }

@@ -30,12 +30,16 @@ export interface RunResult { playbook: string; approve: ApproveMode; outDir: str
 const fill = (s: string, vars: Record<string, string>) => s.replace(/\{(\w+)\}/g, (m, k: string) => vars[k] ?? m);
 
 export function readInbox(pb: Playbook): InboxItem[] {
+  const seen = new Set<string>();
   return readFileSync(join(pb.dir, pb.inbox), "utf8").split("\n").filter((l) => l.trim()).map((l, n) => {
     let raw: InboxItem;
     const bad = (msg: string) => new PlaybookError(join(pb.dir, pb.inbox), [`${pb.inbox} line ${n + 1}: ${msg}`]);
     try { raw = JSON.parse(l) as InboxItem; } catch { throw bad("not valid JSON"); }
     // The id names output files, so it must not be able to climb out of outputs/ (untrusted input).
     if (typeof raw.id !== "string" || !ITEM_ID.test(raw.id)) throw bad(`"id" must be letters, digits, . _ or - (got ${JSON.stringify(raw.id)})`);
+    if (/-invite$/i.test(raw.id)) throw bad(`"id" may not end in -invite; that name is reserved for invite drafts`);
+    if (seen.has(raw.id.toLowerCase())) throw bad(`duplicate id "${raw.id}"`);
+    seen.add(raw.id.toLowerCase());
     // A resume can live in its own file; its text is what gets triaged and grounded. Only files inside the playbook folder.
     if (typeof raw.attachment === "string") {
       let att: string;
@@ -153,7 +157,8 @@ export async function runPlaybook(pb: Playbook, opts: { model: ChatModel; approv
     }
     const planned: ToolCall[] = template.filter((c) => !missing(c))
       .map((c) => ({ tool: c.tool, args: Object.fromEntries(Object.entries(c.args ?? {}).map(([k, v]) => [k, fill(v, vars)])), why: c.why ?? `playbook action for "${tr.label}"` }));
-    const asked = (Array.isArray(item.requests) ? item.requests as ToolCall[] : []).map((c) => ({ ...c, why: "asked for inside the item (untrusted)" }));
+    // A non-string tool name is renamed to an invalid tool, so no later check can be fooled by JS key coercion.
+    const asked = (Array.isArray(item.requests) ? item.requests as ToolCall[] : []).map((c) => ({ ...c, tool: typeof c?.tool === "string" ? c.tool : `invalid-tool:${JSON.stringify(c?.tool)}`, why: "asked for inside the item (untrusted)" }));
     const fromItem: Set<ToolCall> = new Set(asked);
     for (const call of [...planned, ...asked]) {
       // An item may only save its own draft; it cannot overwrite another item's file.
