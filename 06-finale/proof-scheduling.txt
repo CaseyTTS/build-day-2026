@@ -1,5 +1,5 @@
 # Build Day drop 6: scheduling playbook proof (stand-in model, no network, fictional people and calendars)
-# Generated 2026-11-27T14:44Z on Node v24.22.1
+# Generated 2026-11-27T14:54Z on Node v24.22.1
 
 $ npm run start -- --playbook scheduling        # default gate: deny
 Playbook: scheduling  (Interview scheduling assistant)
@@ -128,7 +128,7 @@ $ cut -c1-160 outputs/scheduling/approved/invites-stub.jsonl   # the stub only w
 {"id":"S-401","to":"candidate and panel","invite":"DRAFT INVITE for recruiter approval. Not sent. (S-401)\n\nInterview: Backend engineer (Larkspur Robotics, fic
 
 $ npm test (summary)
-ℹ tests 47
-ℹ pass 47
+ℹ tests 50
+ℹ pass 50
 ℹ fail 0
 ℹ skipped 0

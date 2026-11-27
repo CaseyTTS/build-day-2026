@@ -59,13 +59,21 @@ export const TOOLS: Record<string, { risk: Risk; fn: ToolFn; about: string }> = 
 };
 
 /** What a person sees at the y/n gate. For a tool that would reach outside (external), the whole content is shown, never a preview. */
+/** Control (C0, C1), bidi and zero-width characters, which can move a terminal cursor or reorder what a person reads. */
+const UNSAFE = /[\u0000-\u0009\u000b-\u001f\u007f-\u009f\u00ad\u061c\u180e\u200b-\u200f\u2028-\u202e\u2060-\u2064\u2066-\u2069\ufeff]/g;
+/** Show each unsafe character as \u{..} so untrusted text cannot move the cursor or hide itself. Newlines are kept. */
+export const escapeForTerminal = (s: string): string => s.replace(UNSAFE, (c) => `\\u{${c.codePointAt(0)!.toString(16)}}`);
+
 export function approvalPrompt(call: ToolCall): string {
   const args = call.args ?? {};
+  const tool = escapeForTerminal(String(call.tool));
   if (TOOLS[call.tool]?.risk === "external") {
     const { content, ...rest } = args;
-    return `\nAPPROVE ${call.tool}(${JSON.stringify(rest)})? Full content below.\n----- begin content -----\n${content ?? ""}\n----- end content -----\n[y/N] `;
+    // Untrusted text reaches a terminal here: escape it, and prefix every line with "| " so content cannot forge the end marker.
+    const shown = escapeForTerminal(String(content ?? "")).split("\n").map((l) => `| ${l}`).join("\n");
+    return `\nAPPROVE ${tool}(${escapeForTerminal(JSON.stringify(rest))})? Full content below.\n----- begin content -----\n${shown}\n----- end content -----\n[y/N] `;
   }
-  return `\nAPPROVE ${call.tool}(${JSON.stringify(args).slice(0, 160)})? [y/N] `;
+  return `\nAPPROVE ${tool}(${escapeForTerminal(JSON.stringify(args).slice(0, 160))})? [y/N] `;
 }
 
 export interface GateOutcome { tool: string; args: Record<string, string>; decision: "allow" | "deny" | "not-approved" | "error" | "skipped"; result?: string; why?: string }

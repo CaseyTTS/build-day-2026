@@ -2,7 +2,7 @@
 // Nothing in here knows which job it is doing. Everything job-specific comes from the playbook.
 import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { isAbsolute, join, relative, resolve } from "node:path";
-import { PlaybookError, ITEM_ID, type Playbook, type ToolCall } from "./playbook.js";
+import { PlaybookError, ITEM_ID, RESERVED_ID, type Playbook, type ToolCall } from "./playbook.js";
 import { StandInModel, type Canned, type ChatModel } from "./model.js";
 import { triage, intake, type InboxItem, type TriageResult } from "./triage.js";
 import { answer, buildIndex, retrieve } from "./rag.js";
@@ -37,6 +37,7 @@ export function readInbox(pb: Playbook): InboxItem[] {
     try { raw = JSON.parse(l) as InboxItem; } catch { throw bad("not valid JSON"); }
     // The id names output files, so it must not be able to climb out of outputs/ (untrusted input).
     if (typeof raw.id !== "string" || !ITEM_ID.test(raw.id)) throw bad(`"id" must be letters, digits, . _ or - (got ${JSON.stringify(raw.id)})`);
+    if (RESERVED_ID.test(raw.id)) throw bad(`"id" may not be a Windows reserved name (CON, NUL, COM1 ...)`);
     if (/-invite$/i.test(raw.id)) throw bad(`"id" may not end in -invite; that name is reserved for invite drafts`);
     if (seen.has(raw.id.toLowerCase())) throw bad(`duplicate id "${raw.id}"`);
     seen.add(raw.id.toLowerCase());

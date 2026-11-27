@@ -6,6 +6,8 @@ import { TOOLS } from "./harness.js";
 
 /** Inbox item ids name output files, so they are restricted to a safe file-name alphabet. */
 export const ITEM_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
+/** Windows reserved device names (CON, NUL, COM1 ...) cannot be file names there, so they cannot be ids either. */
+export const RESERVED_ID = /^(con|prn|aux|nul|com[0-9]|lpt[0-9])(\..*)?$/i;
 
 export type Decision = "allow" | "ask" | "deny";
 export interface ToolCall { tool: string; args?: Record<string, string>; why?: string }
@@ -75,6 +77,7 @@ export function checkPlaybook(raw: unknown, dir: string): string[] {
         try { item = JSON.parse(l); } catch { p.push(`inbox line ${n + 1} is not valid JSON`); return; }
         if (!isObj(item) || typeof item.id !== "string" || !ITEM_ID.test(item.id)) { p.push(`inbox line ${n + 1}: "id" must be letters, digits, . _ or -`); return; }
         // Invite drafts are saved as drafts/<id>-invite.md, so that suffix is reserved and every id must be unique.
+        if (RESERVED_ID.test(item.id)) p.push(`inbox line ${n + 1}: "id" may not be a Windows reserved name (CON, NUL, COM1 ...)`);
         if (/-invite$/i.test(item.id)) p.push(`inbox line ${n + 1}: "id" may not end in -invite; that name is reserved for invite drafts`);
         if (seen.has(item.id.toLowerCase())) p.push(`inbox line ${n + 1}: duplicate id "${item.id}"`);
         seen.add(item.id.toLowerCase());
@@ -129,7 +132,7 @@ export function checkPlaybook(raw: unknown, dir: string): string[] {
   const policy = isObj(h) && isObj(h.policy) ? h.policy : null;
   if (!policy) p.push(`"harness.policy" must be an object of tool -> allow|ask|deny`);
   else for (const [tool, d] of Object.entries(policy)) {
-    const def = TOOLS[tool];
+    const def = Object.hasOwn(TOOLS, tool) ? TOOLS[tool] : undefined; // "constructor" or "__proto__" is an unknown tool
     if (!def) p.push(`harness.policy names unknown tool "${tool}"`);
     if (typeof d !== "string" || !DECISIONS.includes(d)) { p.push(`harness.policy "${tool}" must be allow, ask or deny`); continue; }
     // Hard floor: a playbook can tighten these, never loosen them.

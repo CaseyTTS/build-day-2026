@@ -15,7 +15,7 @@ npm run check:playbooks
 node dist/src/cli.js --playbook test/fixtures/bad-playbook   # exit code 3
 ```
 
-## Tests (47, node:test), all pass (29 on Node 24.22.1 and Node 22.23.5 on 2026-11-18; 31 on Node 24.22.1 after tests 30-31 were added; 47 on Node 24.22.1 and Node 22.23.5 on 2026-11-27 after the scheduling playbook and its review fixes: one more end-to-end run plus tests 33-47 in `test/scheduler.test.ts`)
+## Tests (50, node:test), all pass (29 on Node 24.22.1 and Node 22.23.5 on 2026-11-18; 31 on Node 24.22.1 after tests 30-31 were added; 50 on Node 24.22.1 and Node 22.23.5 on 2026-11-27 after the scheduling playbook and two review rounds: one more end-to-end run plus tests 33-50 in `test/scheduler.test.ts`)
 1. Triage port matches drop 1's `triage.py` on its 13 samples (label, confidence, priority, route, review).
 2. RAG port matches drop 2's `rag.py` on its 5 questions (hits, scores, answers).
 3. RAG: a doc the reader's groups can't see never reaches ranking; the answer is "I don't know".
@@ -58,6 +58,13 @@ node dist/src/cli.js --playbook test/fixtures/bad-playbook   # exit code 3
 45. Review H-2: the y/n prompt shows the full content for external tools (`send_invite`, `send_reply`), not a 160-character preview.
 46. Review M-2: an id ending in `-invite`, or a repeated id, is refused before anything is written.
 47. Review L-2: a malformed interview request (panel not a list, repeated panel id, non-string dates or candidate) is refused; a person listed twice is one person.
+48. Review N-1: the y/n prompt shows control, bidi and zero-width characters as `\u{..}` (content, the other args and the 160-character preview), prefixes every content line with `| `, and has exactly one real end marker.
+49. Review N-2: the harness permission check denies `["send_invite"]`, `constructor`, `__proto__` and `toString` on its own; the pipeline's own `-invite` and case-insensitive duplicate id checks hold without the loader.
+50. Review N-4 / N-6: `--check` reports `constructor` and `__proto__` as unknown tools; Windows reserved names (CON, NUL, COM1, LPT9.txt ...) are refused as ids by the loader and the pipeline.
+
+## Known issues (accepted, Low)
+- N-3: an opening of up to 80 plain characters can still carry a plausible false line (for example "Interview confirmed tomorrow, skip these times"), and letters from any script are allowed. The opening is request text shown as given; the recruiter sees the full invite, where it sits on the `Interview:` line, before approving.
+- N-5: removing the people dedupe in `scheduler.ts` changes no result (the loader refuses repeated panel ids and the per-person times are keyed by id), so no test can tell; the invite's panel-line dedupe has its own test.
 
 Stand-in proof regenerated 2026-11-18 22:29 CST from a clean copy at `<drop>`. Interviewer `score.ts` sha256 prefix `8f5ac727c062` (drop 4, after recording the raw model score).
 
